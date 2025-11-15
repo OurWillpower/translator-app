@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Translator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3367D6"/>
+</head>
+<body>
+    <div class="translator">
+        <h1>Travel Translator</h1>
+        
+        <div class="controls">
+            <label for="language-select">Translate to:</label>
+            <select id="language-select">
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="hi">Hindi</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+                <option value="auto">Auto-Detect (for text)</option>
+            </select>
+        </div>
+
+        <button id="talk-button">🎤 Hold to Talk</button>
+        
+        <div class="text-boxes">
+            <textarea id="input-text" placeholder="Or type your text here..."></textarea>
+            <textarea id="output-text" placeholder="Translation appears here..." readonly></textarea>
+        </div>
+        
+        <button id="translate-button">Translate Text</button>
+        <button id="speak-button">🔊 Play Translation</button>
+        
+        <p id="status" class="status"></p>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
