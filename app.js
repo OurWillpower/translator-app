@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 2. Translation Logic ---
 
-    // This function calls the free LibreTranslate API
+    // This function calls the free Argos Open Tech API
     const doTranslate = async (textToTranslate) => {
         if (!textToTranslate) {
             outputText.value = "";
@@ -82,10 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = "Translating...";
         
         const targetLang = langSelect.value;
-        const sourceLang = "auto"; // LibreTranslate can auto-detect
+        const sourceLang = "auto"; // It can auto-detect
 
         try {
-            const res = await fetch("https://libretranslate.de/translate", {
+            // *** THIS IS THE LINE WE CHANGED ***
+            // We are using a different, more reliable free server
+            const res = await fetch("https://translate.argosopentech.com/translate", {
                 method: "POST",
                 body: JSON.stringify({
                     q: textToTranslate,
