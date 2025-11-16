@@ -1,83 +1,101 @@
+/* NEW: Set the new font for the entire app */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f0f2f5;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background-color: #f4f7f6; /* NEW: Soft background color */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    padding: 16px 0; /* Add padding for small screens */
+    padding: 16px;
+    box-sizing: border-box; /* Ensures padding doesn't break layout */
 }
 
 .translator {
     background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 24px;
-    width: 90%;
-    max-width: 500px;
+    border-radius: 16px; /* NEW: Softer corners */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); /* NEW: Deeper, softer shadow */
+    padding: 24px 32px; /* NEW: More horizontal padding */
+    width: 100%; /* NEW: Let it be flexible */
+    max-width: 550px; /* NEW: A slightly wider max width */
     text-align: center;
+    border: 1px solid #e8e8e8; /* NEW: Subtle border */
 }
 
 h1 {
-    font-size: 1.5rem;
+    font-size: 1.8rem; /* NEW: Bigger title */
     color: #333;
     margin-top: 0;
+    margin-bottom: 24px; /* NEW: More space below title */
+    font-weight: 700; /* Bolder */
 }
 
 /* Updated Controls Styling */
 .controls {
-    display: flex; /* Makes dropdowns sit side-by-side */
-    flex-wrap: wrap; /* Allows them to stack on small screens */
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     margin-bottom: 16px;
 }
 
 .select-wrapper {
     display: flex;
-    flex-direction: column; /* Stacks label on top of select */
+    flex-direction: column;
     align-items: flex-start;
-    flex: 1; /* Makes them share the space */
-    min-width: 150px; /* Ensures they don't get too small */
+    flex: 1;
+    min-width: 200px; /* NEW: Give them more space */
 }
 
-/* Style for the voice-select wrapper specifically */
 #voice-select-wrapper {
-    margin-bottom: 16px; /* Add margin back */
+    margin-bottom: 16px;
 }
 
 
 .select-wrapper label {
     font-size: 0.9rem;
-    font-weight: bold;
+    font-weight: 500; /* NEW: Medium weight */
     color: #555;
-    margin-bottom: 4px;
+    margin-bottom: 8px; /* NEW: More space */
 }
 
 #language-select, #voice-select {
     font-size: 1rem;
-    padding: 8px;
+    padding: 12px; /* NEW: More padding inside */
     border-radius: 8px;
     border: 1px solid #ccc;
-    width: 100%; /* Makes them fill the wrapper */
+    width: 100%;
+    box-sizing: border-box; /* Important for padding */
+    background-color: #fafafa; /* NEW: Subtle background */
 }
 
 #talk-button {
     font-size: 1.2rem;
-    padding: 12px 20px;
+    font-weight: 500;
+    padding: 16px 24px; /* NEW: Taller button */
     border-radius: 50px;
     border: none;
-    background-color: #007bff; /* Blue */
+    background-color: #007aff; /* NEW: Brighter, modern blue */
     color: white;
     cursor: pointer;
-    transition: background-color 0.2s;
-    width: 100%; /* Make it full-width */
-    margin-bottom: 16px;
+    transition: all 0.2s ease; /* NEW: Smooth transition for everything */
+    width: 100%;
+    margin-bottom: 24px; /* NEW: More space */
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2); /* NEW: Blue shadow */
 }
 
-/* Style for when the button is recording - NEW GREEN COLOR */
+#talk-button:hover {
+    background-color: #005ec4; /* NEW: Darker hover */
+    box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3);
+}
+
+/* Style for when the button is recording */
 #talk-button.recording {
-    background-color: #28a745; /* Green */
+    background-color: #34c759; /* NEW: Modern green */
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3); /* NEW: Green shadow */
+}
+
+#talk-button.recording:hover {
+    background-color: #2aa14a;
 }
 
 
@@ -89,17 +107,23 @@ h1 {
 }
 
 textarea {
-    width: 95%;
-    min-height: 100px;
+    width: 100%; /* NEW: Use 100% and box-sizing */
+    min-height: 120px; /* NEW: Taller boxes */
     font-size: 1rem;
-    padding: 12px;
+    padding: 12px 16px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #dcdcdc;
     font-family: inherit;
+    box-sizing: border-box; /* Important */
+}
+
+#input-text {
+    border-color: #007aff; /* NEW: Blue border on the input */
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1); /* NEW: Subtle focus glow */
 }
 
 #output-text {
-    background-color: #f9f9f9;
+    background-color: #f4f7f6; /* NEW: Match body background */
 }
 
 /* Button Styling - "Translate" and "Play" are gone */
@@ -111,41 +135,47 @@ textarea {
 }
 
 #clear-button, #copy-button, #mute-button {
-    flex-grow: 1; /* Makes buttons grow equally */
+    flex-grow: 1;
     flex-basis: 0; 
-    font-size: 0.9rem;
-    padding: 10px;
+    font-size: 1rem; /* NEW: Larger font */
+    padding: 12px; /* NEW: More padding */
     border-radius: 8px;
     border: none;
     color: white;
     cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
 }
 
 /* NEW STYLES FOR MUTE BUTTON */
 #mute-button {
-    flex-grow: 0.5; /* Make it a bit smaller */
-    background-color: #17a2b8; /* Same as the old 'Play' button */
+    flex-grow: 0.5;
+    background-color: #5ac8fa; /* NEW: Modern info blue */
 }
 
 #mute-button.muted {
-    background-color: #e63946; /* Red when muted */
+    background-color: #ff3b30; /* NEW: Modern red */
 }
 
 #clear-button {
-    background-color: #6c757d;
+    background-color: #8e8e93; /* NEW: Modern gray */
 }
 
 #copy-button {
-    background-color: #ffc107;
-    color: #333;
+    background-color: #ff9500; /* NEW: Modern orange */
+    color: white;
 }
+
+/* NEW: Hover effects */
+#mute-button:hover { background-color: #3ab0dd; }
+#mute-button.muted:hover { background-color: #d12c23; }
+#clear-button:hover { background-color: #7a7a80; }
+#copy-button:hover { background-color: #db8100; }
 
 
 .status {
     font-style: italic;
     color: #555;
     min-height: 1.2em;
-    margin-top: 16px;
+    margin-top: 24px; /* NEW: More space */
 }
-
-/* Ad Slot styles are GONE */
