@@ -19,13 +19,13 @@ body {
     max-width: 550px; 
     text-align: center;
     
-    /* --- The Royal Golden Border --- */
-    border: 3px solid transparent; /* 1. Set a transparent border */
-    background-image: linear-gradient(#1e1e1e, #1e1e1e), /* 2. This is the "inside" background */
-                      linear-gradient(45deg, #DAA520, #FFD700); /* 3. This is the "outside" border gradient */
+    /* The Royal Golden Border */
+    border: 3px solid transparent; 
+    background-image: linear-gradient(#1e1e1e, #1e1e1e), 
+                      linear-gradient(45deg, #DAA520, #FFD700); 
     background-origin: border-box;
-    background-clip: padding-box, border-box; /* 4. This is the magic! */
-    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.1); /* 5. Faint golden shadow */
+    background-clip: padding-box, border-box; 
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.1); 
 }
 
 h1 {
@@ -36,19 +36,54 @@ h1 {
     font-weight: 700; 
 }
 
-.controls {
+/* Updated Controls Styling */
+.controls-wrapper {
     display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
+    flex-direction: column;
     margin-bottom: 16px;
 }
+
+.controls {
+    display: flex;
+    align-items: flex-end; /* Align the dropdowns and swap button */
+    gap: 16px;
+}
+
+/* NEW: Swap Button Styling */
+#swap-button {
+    background: none;
+    border: 2px solid #555;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin-bottom: 12px; /* Align with bottom of input boxes */
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+#swap-button:hover {
+    border-color: #007aff;
+}
+
+#swap-button svg {
+    width: 24px;
+    height: 24px;
+    fill: #007aff; /* Blue arrow color */
+    transition: transform 0.2s ease;
+}
+
+#swap-button.swapping {
+    transform: rotate(180deg);
+}
+
 
 .select-wrapper {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     flex: 1;
-    min-width: 200px; 
+    min-width: 150px; 
 }
 
 #voice-select-wrapper {
@@ -88,12 +123,6 @@ h1 {
     box-shadow: 0 4px 20px rgba(88, 86, 214, 0.4); 
 }
 
-#talk-button:hover {
-    box-shadow: 0 6px 24px rgba(88, 86, 214, 0.6);
-    transform: translateY(-2px); 
-}
-
-/* Style for when the button is recording */
 #talk-button.recording {
     background-image: linear-gradient(45deg, #34c759, #28a745);
     box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4); 
@@ -154,6 +183,7 @@ textarea {
     gap: 8px; 
 }
 
+/* SVG Icon styles */
 .icon-button svg {
     width: 18px;
     height: 18px;
@@ -183,10 +213,8 @@ textarea {
 
 /* Hover effects */
 #mute-button:hover { background-color: #4a4a4c; }
-#mute-button.muted:hover { background-color: #d12c23; }
 #clear-button:hover { background-color: #4a4a4c; }
 #copy-button:hover { background-color: #4a4a4c; }
-
 
 .status {
     color: #8e8e93; 
