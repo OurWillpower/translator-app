@@ -61,10 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else if (selectedGender === 'male' && (name.includes('male') || name.includes('david') || name.includes('mark'))) {
                     genderMatch = true;
                 }
-                
-                // This is a fallback: if no voices match our filter,
-                // we'll try to show any voice for that language
-                // But for now, we'll keep it strict.
 
                 // Only add the voice if both language and gender match
                 if (genderMatch) {
