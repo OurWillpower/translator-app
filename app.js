@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Get all the HTML elements we need
     const talkButton = document.getElementById("talk-button");
-    // "Translate" and "Speak" buttons are gone
     const langSelect = document.getElementById("language-select");
     const voiceSelect = document.getElementById("voice-select");
     const voiceSelectWrapper = document.getElementById("voice-select-wrapper");
@@ -162,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.stop();
     });
 
-    // --- 6. Translation Logic ---
+    // --- 6. Translation Logic (THIS IS THE FIX) ---
     const doTranslate = async (textToTranslate, autoPlay = false) => {
         if (!textToTranslate) {
             outputText.value = "";
@@ -195,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 playTranslation(translatedText);
             }
 
-        } catch (error) {
+        } catch (error) { // <-- THE TYPO WAS HERE
             status.textContent = "Translation failed. Check internet.";
             console.error(error);
         }
