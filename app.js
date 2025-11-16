@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 2. Translation Logic ---
 
-    // This function calls the free Argos Open Tech API
+    // *** THIS IS THE NEW, RELIABLE CODE ***
     const doTranslate = async (textToTranslate) => {
         if (!textToTranslate) {
             outputText.value = "";
@@ -82,29 +82,25 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = "Translating...";
         
         const targetLang = langSelect.value;
-        const sourceLang = "auto"; // It can auto-detect
+        const sourceLang = "auto"; // Google will auto-detect
 
         try {
-            // *** THIS IS THE LINE WE CHANGED ***
-            // We are using a different, more reliable free server
-            const res = await fetch("https://translate.argosopentech.com/translate", {
-                method: "POST",
-                body: JSON.stringify({
-                    q: textToTranslate,
-                    source: sourceLang,
-                    target: targetLang,
-                    format: "text"
-                }),
-                headers: { "Content-Type": "application/json" }
-            });
+            // We are using the unofficial Google Translate API
+            // This is much more reliable
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(textToTranslate)}`;
+            
+            const res = await fetch(url);
 
             if (!res.ok) {
                 throw new Error(`API error: ${res.status}`);
             }
 
             const data = await res.json();
-            const translatedText = data.translatedText;
             
+            // Google's API returns the text in a nested array
+            // This line safely gets the translated text
+            const translatedText = data[0].map(segment => segment[0]).join('');
+
             outputText.value = translatedText; // Put translation in the output box
             status.textContent = "";
 
