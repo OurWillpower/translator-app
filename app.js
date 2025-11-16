@@ -121,8 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             utterance.onerror = (event) => {
                 status.textContent = "Speech error. No voice for this language?";
+                // THIS IS THE FIX: The typo "Gj" is gone.
                 console.error("SpeechSynthesisUtterance.onerror", event);
-Gj
             };
             synthesis.speak(utterance);
         }
