@@ -25,11 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const status = document.getElementById("status");
     const clearButton = document.getElementById("clear-button");
     const copyButton = document.getElementById("copy-button");
+    const muteButton = document.getElementById("mute-button"); // NEW
 
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; // We only want final results
 
     let voices = []; // We will fill this array with all available voices
+    let isMuted = false; // NEW state for our mute button
 
     // --- 1. Populate Voice List (Now much simpler) ---
     function populateVoiceList() {
@@ -89,11 +91,28 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Update UI when user changes dropdowns
     langSelect.addEventListener("change", populateVoiceList);
-    // "genderSelect" listener is gone
+    
+    // NEW MUTE BUTTON LOGIC
+    muteButton.addEventListener("click", () => {
+        isMuted = !isMuted; // Toggle the state
+        if (isMuted) {
+            muteButton.textContent = "🔇";
+            muteButton.classList.add("muted");
+            synthesis.cancel(); // Stop any speech that is happening
+        } else {
+            muteButton.textContent = "🔊";
+            muteButton.classList.remove("muted");
+        }
+    });
 
 
-    // --- 4. Text-to-Speech Function ---
+    // --- 4. Text-to-Speech Function (UPDATED) ---
     const playTranslation = (textToSpeak) => {
+        // NEW: Check if muted
+        if (isMuted) {
+            return; // Do nothing
+        }
+        
         if (textToSpeak && synthesis.speaking) {
             synthesis.cancel(); // Stop if already speaking
         }
@@ -127,8 +146,6 @@ document.addEventListener("DOMContentLoaded", () => {
             synthesis.speak(utterance);
         }
     };
-    
-    // "speakButton" listener is gone
 
     // --- 5. Speech-to-Text Logic ---
     
@@ -161,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.stop();
     });
 
-    // --- 6. Translation Logic (THIS IS THE FIX) ---
+    // --- 6. Translation Logic ---
     const doTranslate = async (textToTranslate, autoPlay = false) => {
         if (!textToTranslate) {
             outputText.value = "";
@@ -190,21 +207,21 @@ document.addEventListener("DOMContentLoaded", () => {
             populateVoiceList();
 
             // If autoPlay is true AND we have voices, play it!
+            // (The playTranslation function will check if we are muted)
             if (autoPlay && voiceSelectWrapper.style.display !== 'none') {
                 playTranslation(translatedText);
             }
 
-        } catch (error) { // <-- THE TYPO WAS HERE
+        } catch (error) {
             status.textContent = "Translation failed. Check internet.";
             console.error(error);
         }
     };
     
     // We also need to translate if the user *types*
-    // We will add a 'blur' event, which fires when
-    // the user clicks out of the text box.
+    // THIS IS THE KEY CHANGE: We now pass 'true' to auto-play
     inputText.addEventListener("blur", () => {
-        doTranslate(inputText.value, false); // No auto-play
+        doTranslate(inputText.value, true); // auto-play
     });
 
     // --- 7. Helper Button Logic ---
