@@ -6,6 +6,7 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    padding: 16px 0; /* Add padding for small screens */
 }
 
 .translator {
@@ -24,15 +25,35 @@ h1 {
     margin-top: 0;
 }
 
+/* Updated Controls Styling */
 .controls {
+    display: flex; /* Makes dropdowns sit side-by-side */
+    flex-wrap: wrap; /* Allows them to stack on small screens */
+    gap: 16px;
     margin-bottom: 16px;
 }
 
-#language-select {
+.select-wrapper {
+    display: flex;
+    flex-direction: column; /* Stacks label on top of select */
+    align-items: flex-start;
+    flex: 1; /* Makes them share the space */
+    min-width: 150px; /* Ensures they don't get too small */
+}
+
+.select-wrapper label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+#language-select, #voice-select {
     font-size: 1rem;
     padding: 8px;
     border-radius: 8px;
     border: 1px solid #ccc;
+    width: 100%; /* Makes them fill the wrapper */
 }
 
 #talk-button {
@@ -73,23 +94,63 @@ textarea {
     background-color: #f9f9f9;
 }
 
-#translate-button, #speak-button {
-    font-size: 1rem;
-    padding: 10px 16px;
+/* Button Styling */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+#translate-button, #speak-button, #clear-button, #copy-button {
+    flex-grow: 1;
+    flex-basis: 0; /* Makes buttons grow equally */
+    font-size: 0.9rem;
+    padding: 10px;
     border-radius: 8px;
     border: none;
-    background-color: #28a745;
     color: white;
     cursor: pointer;
-    margin: 4px;
+}
+
+#translate-button {
+    background-color: #28a745;
 }
 
 #speak-button {
     background-color: #17a2b8;
 }
 
+#clear-button {
+    background-color: #6c757d;
+}
+
+#copy-button {
+    background-color: #ffc107;
+    color: #333;
+}
+
+
 .status {
     font-style: italic;
     color: #555;
     min-height: 1.2em;
+    margin-top: 16px;
+}
+
+/* Ad Slot Styling */
+.ad-slot {
+    width: 100%;
+    min-height: 50px; /* Ads are usually at least 50px tall */
+    margin-top: 20px;
+    padding: 10px 0;
+    text-align: center;
+    background-color: #fafafa;
+    border: 1px dashed #ccc;
+}
+
+.ad-slot p {
+    margin: 0;
+    color: #999;
+    font-style: italic;
 }
