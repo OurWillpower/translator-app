@@ -62,8 +62,6 @@ h1 {
     width: 100%; /* Makes them fill the wrapper */
 }
 
-/* Talk container and toggle styles are GONE */
-
 #talk-button {
     font-size: 1.2rem;
     padding: 12px 20px;
@@ -150,19 +148,4 @@ textarea {
     margin-top: 16px;
 }
 
-/* Ad Slot Styling */
-.ad-slot {
-    width: 100%;
-    min-height: 50px; /* Ads are usually at least 50px tall */
-    margin-top: 20px;
-    padding: 10px 0;
-    text-align: center;
-    background-color: #fafafa;
-    border: 1px dashed #ccc;
-}
-
-.ad-slot p {
-    margin: 0;
-    color: #999;
-    font-style: italic;
-}
+/* Ad Slot styles are GONE */
