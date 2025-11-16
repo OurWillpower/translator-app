@@ -20,8 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const translateButton = document.getElementById("translate-button");
     const speakButton = document.getElementById("speak-button");
     const langSelect = document.getElementById("language-select");
+    const genderSelect = document.getElementById("gender-select"); // NEW
     const voiceSelect = document.getElementById("voice-select");
-    const voiceSelectWrapper = document.getElementById("voice-select-wrapper"); // Get the wrapper
+    const voiceSelectWrapper = document.getElementById("voice-select-wrapper");
     const inputText = document.getElementById("input-text");
     const outputText = document.getElementById("output-text");
     const status = document.getElementById("status");
@@ -33,11 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let voices = []; // We will fill this array with all available voices
 
-    // --- 1. Load Voices Function ---
+    // --- 1. Load Voices Function (UPDATED) ---
     function populateVoiceList() {
         voices = synthesis.getVoices(); // Get all voices from the device
         
         const selectedLangCode = langSelect.value;
+        const selectedGender = genderSelect.value; // Will be "female" or "male"
         const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
 
         voiceSelect.innerHTML = '<option value="">Default for language</option>';
@@ -45,20 +47,42 @@ document.addEventListener("DOMContentLoaded", () => {
         let foundVoices = 0; // Let's count how many voices we find
 
         for (const voice of voices) {
+            // First, check if the language matches
             if (voice.lang.startsWith(selectedLangCode)) {
-                foundVoices++; // We found one!
-                const option = document.createElement("option");
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute("data-lang", voice.lang);
-                option.setAttribute("data-name", voice.name);
-
-                if (voice.name === selectedVoiceName) {
-                    option.selected = true;
+                
+                // NEW: Now, check if the gender matches
+                let genderMatch = false;
+                
+                // This is a hack, as the API has no .gender
+                // We check the voice name for "male" or "female"
+                const name = voice.name.toLowerCase();
+                if (selectedGender === 'female' && (name.includes('female') || name.includes('zira') || name.includes('susan'))) {
+                    genderMatch = true;
+                } else if (selectedGender === 'male' && (name.includes('male') || name.includes('david') || name.includes('mark'))) {
+                    genderMatch = true;
                 }
-                voiceSelect.appendChild(option);
+                
+                // This is a fallback: if no voices match our filter,
+                // we'll try to show any voice for that language
+                // But for now, we'll keep it strict.
+
+                // Only add the voice if both language and gender match
+                if (genderMatch) {
+                    foundVoices++; // We found one!
+                    const option = document.createElement("option");
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.setAttribute("data-lang", voice.lang);
+                    option.setAttribute("data-name", voice.name);
+
+                    if (voice.name === selectedVoiceName) {
+                        option.selected = true;
+                    }
+                    voiceSelect.appendChild(option);
+                }
             }
         }
 
+        // --- THIS IS THE NEW LOGIC ---
         // Check if we found any voices for the selected language
         if (foundVoices > 0) {
             // If yes, show the "Play" button and the voice selector
@@ -74,11 +98,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // This is the *most important* part.
     synthesis.onvoiceschanged = populateVoiceList;
     
-    // --- 2. Update voice list when language changes ---
+    // --- 2. Update voice list when language OR GENDER changes ---
     langSelect.addEventListener("change", populateVoiceList);
+    genderSelect.addEventListener("change", populateVoiceList); // NEW
+
 
     // --- 5. Text-to-Speech Function (MOVED) ---
-    // We moved this function so doTranslate can call it
     const playTranslation = (textToSpeak) => {
         if (textToSpeak && synthesis.speaking) {
             synthesis.cancel(); // Stop if already speaking
@@ -87,13 +112,37 @@ document.addEventListener("DOMContentLoaded", () => {
         if (textToSpeak) {
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
             
+            // --- THIS IS THE UPGRADE ---
+            // Find the full voice object the user selected *in the specific voice list*
             const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
-            const voice = voices.find(v => v.name === selectedVoiceName);
+            let voice = voices.find(v => v.name === selectedVoiceName);
 
+            // If no specific voice was chosen (or "Default"),
+            // find the *first available voice* that matches the gender preference
+            if (!voice) {
+                 const selectedGender = genderSelect.value;
+                // This is the same logic as populateVoiceList, but
+                // we are just finding the *first* match
+                for (const v of voices) {
+                    if (v.lang.startsWith(langSelect.value)) {
+                        const name = v.name.toLowerCase();
+                        if (selectedGender === 'female' && (name.includes('female') || name.includes('zira') || name.includes('susan'))) {
+                            voice = v; // Found a female voice!
+                            break;
+                        } else if (selectedGender === 'male' && (name.includes('male') || name.includes('david') || name.includes('mark'))) {
+                            voice = v; // Found a male voice!
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // If we found a voice, use it.
             if (voice) {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
+                // Otherwise, use the old "default" behavior
                 utterance.lang = langSelect.value;
             }
             
@@ -110,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     speakButton.addEventListener("click", () => playTranslation(outputText.value));
 
 
-    // --- 3. Speech-to-Text Logic (UPDATED) ---
+    // --- 3. Speech-to-Text Logic ---
     
     recognition.onresult = (event) => {
         const spokenText = event.results[0][0].transcript;
@@ -119,8 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
         talkButton.classList.remove("recording");
         talkButton.textContent = "🎤 Hold to Talk";
         
-        // --- THIS IS THE KEY ---
-        // We now pass "true" to tell doTranslate to auto-play
         doTranslate(spokenText, true); 
     };
     recognition.onstart = () => {
@@ -143,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.stop();
     });
 
-    // --- 4. Translation Logic (UPDATED) ---
+    // --- 4. Translation Logic ---
 
     // autoPlay is a new variable (true or false)
     const doTranslate = async (textToTranslate, autoPlay = false) => {
@@ -173,9 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Now, refresh the voice list
             populateVoiceList();
 
-            // --- THIS IS THE UPGRADE ---
             // If autoPlay is true AND we have voices, play it!
-            if (autoPlay && voiceSelect.options.length > 1) {
+            // We check voiceSelectWrapper, not options,
+            // because it's the element that gets hidden
+            if (autoPlay && voiceSelectWrapper.style.display !== 'none') {
                 playTranslation(translatedText);
             }
 
