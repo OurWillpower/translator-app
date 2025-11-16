@@ -26,15 +26,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearButton = document.getElementById("clear-button");
     const copyButton = document.getElementById("copy-button");
     const muteButton = document.getElementById("mute-button");
-    const recordToggle = document.getElementById("record-toggle"); // NEW
+    // 'recordToggle' is gone
 
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; // We only want final results
 
     let voices = []; // We will fill this array with all available voices
     let isMuted = false;
-    let isRecordMode = false; // NEW: State for our toggle
-    let isListening = false; // NEW: State for "Record" mode
+    let isListening = false; // This is now our ONLY state
 
     // --- 1. Populate Voice List ---
     function populateVoiceList() {
@@ -94,16 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // NEW: Listen for changes to the "Long Note" toggle
-    recordToggle.addEventListener("change", () => {
-        isRecordMode = recordToggle.checked;
-        if (isRecordMode) {
-            talkButton.textContent = "🎤 Tap to Record";
-        } else {
-            talkButton.textContent = "🎤 Hold to Talk";
-        }
-    });
-
     // --- 4. Text-to-Speech Function ---
     const playTranslation = (textToSpeak) => {
         if (isMuted) return;
@@ -139,18 +128,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     recognition.onstart = () => {
         status.textContent = "Listening...";
-        talkButton.classList.add("recording");
+        talkButton.classList.add("recording"); // This makes it GREEN
+        talkButton.textContent = "🛑 Press again to Stop"; // Your new text
     };
 
     recognition.onend = () => {
         status.textContent = "";
-        talkButton.classList.remove("recording");
-        isListening = false; // Always set listening to false when recognition ends
-        if (isRecordMode) {
-            talkButton.textContent = "🎤 Tap to Record";
-        } else {
-            talkButton.textContent = "🎤 Hold to Talk";
-        }
+        talkButton.classList.remove("recording"); // Back to BLUE
+        talkButton.textContent = "🎤 Press to Speak"; // Back to default text
+        isListening = false; // We are no longer listening
     };
 
     recognition.onerror = (event) => {
@@ -158,45 +144,21 @@ document.addEventListener("DOMContentLoaded", () => {
         isListening = false;
     };
 
-    // NEW: Re-written talk button logic
-    
-    // "Hold to Talk" mode (default)
-    talkButton.addEventListener("mousedown", () => {
-        if (!isRecordMode && !isListening) { // Only run if NOT in record mode
+    // NEW: Simplified "tap-on/tap-off" logic
+    talkButton.addEventListener("click", () => {
+        if (!isListening) {
+            // Start recording
             try {
                 isListening = true;
                 recognition.start();
             } catch (e) {
                 console.error("Recognition already started.", e);
-            }
-        }
-    });
-
-    talkButton.addEventListener("mouseup", () => {
-        if (!isRecordMode && isListening) { // Only run if NOT in record mode
-            recognition.stop();
-            isListening = false;
-        }
-    });
-
-    // "Tap to Record" mode
-    talkButton.addEventListener("click", () => {
-        if (isRecordMode) { // Only run IF in record mode
-            if (!isListening) {
-                // Start recording
-                try {
-                    isListening = true;
-                    recognition.start();
-                    talkButton.textContent = "🛑 Tap to Stop";
-                } catch (e) {
-                    console.error("Recognition already started.", e);
-                }
-            } else {
-                // Stop recording
-                recognition.stop();
                 isListening = false;
-                talkButton.textContent = "🎤 Tap to Record";
             }
+        } else {
+            // Stop recording
+            recognition.stop();
+            // onend() will handle the rest
         }
     });
 
