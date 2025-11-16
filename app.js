@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     speakButton.addEventListener("click", () => {
         const textToSpeak = outputText.value;
+.
         if (textToSpeak && synthesis.speaking) {
             synthesis.cancel(); // Stop if already speaking
         }
@@ -164,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                utterance.lang = langSelect.value;
+                utterance.lang = langSelect.fvalue;
             }
             
             utterance.onerror = (event) => {
