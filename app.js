@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 playTranslation(translatedText);
             }
 
-        } catch (error). {
+        } catch (error) {
             status.textContent = "Translation failed. Check internet.";
             console.error(error);
         }
