@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let voices = []; // We will fill this array with all available voices
 
-    // --- 1. Load Voices Function (NOW UPDATED) ---
+    // --- 1. Load Voices Function ---
     function populateVoiceList() {
         voices = synthesis.getVoices(); // Get all voices from the device
         
@@ -59,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // --- THIS IS THE NEW LOGIC ---
         // Check if we found any voices for the selected language
         if (foundVoices > 0) {
             // If yes, show the "Play" button and the voice selector
@@ -78,8 +77,40 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. Update voice list when language changes ---
     langSelect.addEventListener("change", populateVoiceList);
 
+    // --- 5. Text-to-Speech Function (MOVED) ---
+    // We moved this function so doTranslate can call it
+    const playTranslation = (textToSpeak) => {
+        if (textToSpeak && synthesis.speaking) {
+            synthesis.cancel(); // Stop if already speaking
+        }
 
-    // --- 3. Speech-to-Text Logic ---
+        if (textToSpeak) {
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            
+            const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
+            const voice = voices.find(v => v.name === selectedVoiceName);
+
+            if (voice) {
+                utterance.voice = voice;
+                utterance.lang = voice.lang;
+            } else {
+                utterance.lang = langSelect.value;
+            }
+            
+            utterance.onerror = (event) => {
+                status.textContent = "Speech error. No voice for this language?";
+                console.error("SpeechSynthesisUtterance.onerror", event);
+            };
+            
+            synthesis.speak(utterance);
+        }
+    };
+    
+    // Add click event for the manual "Play" button
+    speakButton.addEventListener("click", () => playTranslation(outputText.value));
+
+
+    // --- 3. Speech-to-Text Logic (UPDATED) ---
     
     recognition.onresult = (event) => {
         const spokenText = event.results[0][0].transcript;
@@ -87,7 +118,10 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = "";
         talkButton.classList.remove("recording");
         talkButton.textContent = "🎤 Hold to Talk";
-        doTranslate(spokenText);
+        
+        // --- THIS IS THE KEY ---
+        // We now pass "true" to tell doTranslate to auto-play
+        doTranslate(spokenText, true); 
     };
     recognition.onstart = () => {
         status.textContent = "Listening...";
@@ -109,9 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.stop();
     });
 
-    // --- 4. Translation Logic ---
+    // --- 4. Translation Logic (UPDATED) ---
 
-    const doTranslate = async (textToTranslate) => {
+    // autoPlay is a new variable (true or false)
+    const doTranslate = async (textToTranslate, autoPlay = false) => {
         if (!textToTranslate) {
             outputText.value = "";
             return;
@@ -134,47 +169,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     langSelect.value = detectedLangCode;
                  }
             }
-            // Now, refresh the voice list (which will hide/show the play button)
+            
+            // Now, refresh the voice list
             populateVoiceList();
+
+            // --- THIS IS THE UPGRADE ---
+            // If autoPlay is true AND we have voices, play it!
+            if (autoPlay && voiceSelect.options.length > 1) {
+                playTranslation(translatedText);
+            }
 
         } catch (error) {
             status.textContent = "Translation failed. Check internet.";
             console.error(error);
         }
     };
-    translateButton.addEventListener("click", () => {
-        doTranslate(inputText.value);
-    });
-
-    // --- 5. Text-to-Speech Logic ---
     
-    speakButton.addEventListener("click", () => {
-        const textToSpeak = outputText.value;
-.
-        if (textToSpeak && synthesis.speaking) {
-            synthesis.cancel(); // Stop if already speaking
-        }
-
-        if (textToSpeak) {
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            
-            const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
-            const voice = voices.find(v => v.name === selectedVoiceName);
-
-            if (voice) {
-                utterance.voice = voice;
-                utterance.lang = voice.lang;
-            } else {
-                utterance.lang = langSelect.fvalue;
-            }
-            
-            utterance.onerror = (event) => {
-                status.textContent = "Speech error. No voice for this language?";
-                console.error("SpeechSynthesisUtterance.onerror", event);
-            };
-            
-            synthesis.speak(utterance);
-        }
+    // When the user *types* and clicks, we do NOT auto-play
+    translateButton.addEventListener("click", () => {
+        doTranslate(inputText.value, false);
     });
 
     // --- 6. Helper Button Logic ---
@@ -201,7 +214,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 7. Initial Check ---
-    // Run the function once on load to hide/show
-    // buttons for the default language
     populateVoiceList();
 });
