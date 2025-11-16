@@ -108,15 +108,25 @@ textarea {
     margin-top: 8px;
 }
 
-#clear-button, #copy-button {
-    flex-grow: 1;
-    flex-basis: 0; /* Makes buttons grow equally */
+#clear-button, #copy-button, #mute-button {
+    flex-grow: 1; /* Makes buttons grow equally */
+    flex-basis: 0; 
     font-size: 0.9rem;
     padding: 10px;
     border-radius: 8px;
     border: none;
     color: white;
     cursor: pointer;
+}
+
+/* NEW STYLES FOR MUTE BUTTON */
+#mute-button {
+    flex-grow: 0.5; /* Make it a bit smaller */
+    background-color: #17a2b8; /* Same as the old 'Play' button */
+}
+
+#mute-button.muted {
+    background-color: #e63946; /* Red when muted */
 }
 
 #clear-button {
