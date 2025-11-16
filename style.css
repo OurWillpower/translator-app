@@ -41,6 +41,13 @@ h1 {
     min-width: 150px; /* Ensures they don't get too small */
 }
 
+/* Style for the voice-select wrapper specifically */
+#voice-select-wrapper {
+    margin-bottom: 16px; /* Add margin back */
+    min-width: 100%; /* Make it full-width */
+}
+
+
 .select-wrapper label {
     font-size: 0.9rem;
     font-weight: bold;
@@ -48,7 +55,7 @@ h1 {
     margin-bottom: 4px;
 }
 
-#language-select, #voice-select {
+#language-select, #voice-select, #gender-select {
     font-size: 1rem;
     padding: 8px;
     border-radius: 8px;
