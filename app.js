@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const translateButton = document.getElementById("translate-button");
     const speakButton = document.getElementById("speak-button");
     const langSelect = document.getElementById("language-select");
-    const voiceSelect = document.getElementById("voice-select"); // Our new dropdown
+    const voiceSelect = document.getElementById("voice-select");
+    const voiceSelectWrapper = document.getElementById("voice-select-wrapper"); // Get the wrapper
     const inputText = document.getElementById("input-text");
     const outputText = document.getElementById("output-text");
     const status = document.getElementById("status");
@@ -32,45 +33,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let voices = []; // We will fill this array with all available voices
 
-    // --- 1. NEW: Load Voices Function ---
+    // --- 1. Load Voices Function (NOW UPDATED) ---
     function populateVoiceList() {
         voices = synthesis.getVoices(); // Get all voices from the device
         
-        // Find the currently selected language
         const selectedLangCode = langSelect.value;
-        
-        // Remember which voice was selected
         const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
 
-        // Clear the old list of voices
         voiceSelect.innerHTML = '<option value="">Default for language</option>';
         
+        let foundVoices = 0; // Let's count how many voices we find
+
         for (const voice of voices) {
-            // Check if the voice's language code (e.g., "en-US") starts with the
-            // language we selected (e.g., "en").
             if (voice.lang.startsWith(selectedLangCode)) {
+                foundVoices++; // We found one!
                 const option = document.createElement("option");
-                // Show the user the voice name and language (e.g., "Zira (en-US)")
                 option.textContent = `${voice.name} (${voice.lang})`;
                 option.setAttribute("data-lang", voice.lang);
                 option.setAttribute("data-name", voice.name);
 
-                // If this voice was the one previously selected, re-select it
                 if (voice.name === selectedVoiceName) {
                     option.selected = true;
                 }
-
                 voiceSelect.appendChild(option);
             }
+        }
+
+        // --- THIS IS THE NEW LOGIC ---
+        // Check if we found any voices for the selected language
+        if (foundVoices > 0) {
+            // If yes, show the "Play" button and the voice selector
+            speakButton.style.display = "block";
+            voiceSelectWrapper.style.display = "block";
+        } else {
+            // If no, HIDE the "Play" button and voice selector
+            speakButton.style.display = "none";
+            voiceSelectWrapper.style.display = "none";
         }
     }
 
     // This is the *most important* part.
-    // The browser takes a moment to load voices. This event
-    // fires when the voices are ready.
     synthesis.onvoiceschanged = populateVoiceList;
     
-    // --- 2. NEW: Update voice list when language changes ---
+    // --- 2. Update voice list when language changes ---
     langSelect.addEventListener("change", populateVoiceList);
 
 
@@ -123,17 +128,13 @@ document.addEventListener("DOMContentLoaded", () => {
             outputText.value = translatedText;
             status.textContent = "";
             
-            // --- NEW: Automatically update voice list after translation ---
-            // This is helpful if "auto-detect" was used
-            // We'll update the language dropdown to match the detected language
-            const detectedLangCode = data[2].split('-')[0]; // e.g., 'es'
+            const detectedLangCode = data[2].split('-')[0];
             if(langSelect.value === 'auto') {
-                 // Check if we have this language in our list
                  if ([...langSelect.options].some(o => o.value === detectedLangCode)) {
                     langSelect.value = detectedLangCode;
                  }
             }
-            // Now, refresh the voice list
+            // Now, refresh the voice list (which will hide/show the play button)
             populateVoiceList();
 
         } catch (error) {
@@ -145,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         doTranslate(inputText.value);
     });
 
-    // --- 5. Text-to-Speech Logic (UPDATED) ---
+    // --- 5. Text-to-Speech Logic ---
     
     speakButton.addEventListener("click", () => {
         const textToSpeak = outputText.value;
@@ -156,17 +157,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (textToSpeak) {
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
             
-            // --- THIS IS THE UPGRADE ---
-            // Find the full voice object the user selected
             const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
             const voice = voices.find(v => v.name === selectedVoiceName);
 
             if (voice) {
-                // If we found a specific voice, use it!
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                // Otherwise, use the old "default" behavior
                 utterance.lang = langSelect.value;
             }
             
@@ -181,21 +178,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 6. Helper Button Logic ---
     
-    // Add click event for the "Clear" button
     clearButton.addEventListener("click", () => {
         inputText.value = "";
         outputText.value = "";
         status.textContent = "";
     });
 
-    // Add click event for the "Copy" button
     copyButton.addEventListener("click", () => {
         const textToCopy = outputText.value;
         if (textToCopy) {
             navigator.clipboard.writeText(textToCopy)
                 .then(() => {
                     status.textContent = "Translation copied to clipboard!";
-                    // Clear the message after 2 seconds
                     setTimeout(() => { status.textContent = ""; }, 2000);
                 })
                 .catch(err => {
@@ -204,4 +198,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
     });
+
+    // --- 7. Initial Check ---
+    // Run the function once on load to hide/show
+    // buttons for the default language
+    populateVoiceList();
 });
