@@ -44,7 +44,6 @@ h1 {
 /* Style for the voice-select wrapper specifically */
 #voice-select-wrapper {
     margin-bottom: 16px; /* Add margin back */
-    min-width: 100%; /* Make it full-width */
 }
 
 
@@ -55,7 +54,7 @@ h1 {
     margin-bottom: 4px;
 }
 
-#language-select, #voice-select, #gender-select {
+#language-select, #voice-select {
     font-size: 1rem;
     padding: 8px;
     border-radius: 8px;
@@ -101,7 +100,7 @@ textarea {
     background-color: #f9f9f9;
 }
 
-/* Button Styling */
+/* Button Styling - "Translate" and "Play" are gone */
 .button-row {
     display: flex;
     justify-content: center;
@@ -109,7 +108,7 @@ textarea {
     margin-top: 8px;
 }
 
-#translate-button, #speak-button, #clear-button, #copy-button {
+#clear-button, #copy-button {
     flex-grow: 1;
     flex-basis: 0; /* Makes buttons grow equally */
     font-size: 0.9rem;
@@ -118,14 +117,6 @@ textarea {
     border: none;
     color: white;
     cursor: pointer;
-}
-
-#translate-button {
-    background-color: #28a745;
-}
-
-#speak-button {
-    background-color: #17a2b8;
 }
 
 #clear-button {
