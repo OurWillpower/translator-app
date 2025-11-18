@@ -27,8 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearButton = document.getElementById("clear-button");
     const copyButton = document.getElementById("copy-button");
     const muteButton = document.getElementById("mute-button");
-    const swapButton = document.getElementById("swap-button"); // NEW SWAP BUTTON
-
+    
     // Get the icons for mute button control
     const iconSpeaker = document.getElementById("icon-speaker");
     const iconMute = document.getElementById("icon-mute");
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isMuted = false;
     let isListening = false; 
 
-    // --- 1. Populate Voice List (The Specific Voice Dropdown) ---
+    // --- 1. Populate Voice List ---
     function populateVoiceList() {
         const selectedLangCode = langSelectTarget.value;
         const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
@@ -86,14 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAndDisplayVoices(); 
     synthesis.onvoiceschanged = loadAndDisplayVoices; 
     
-    // Update UI when user changes "To" language
     langSelectTarget.addEventListener("change", populateVoiceList);
     
-    // Update recognition language when user changes "From" language
     langSelectSource.addEventListener("change", () => {
         recognition.lang = langSelectSource.value;
     });
     
+    // Mute Button Logic
     muteButton.addEventListener("click", () => {
         isMuted = !isMuted;
         if (isMuted) {
@@ -108,35 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // NEW SWAP LOGIC
-    swapButton.addEventListener("click", () => {
-        status.textContent = "Swapping languages...";
-        swapButton.classList.add('swapping');
-
-        // Swap the values
-        const tempValue = langSelectSource.value;
-        langSelectSource.value = langSelectTarget.value;
-        langSelectTarget.value = tempValue;
-        
-        // After swapping, the app needs to update two things:
-        // 1. The Voice Recognition language (which is what we are speaking in)
-        recognition.lang = langSelectSource.value;
-
-        // 2. The Voice Selection Dropdown (which is based on the target)
-        populateVoiceList();
-
-        // 3. If there is text in the box, translate it using the new settings
-        if (inputText.value) {
-            const sourceLang = langSelectSource.value.split('-')[0];
-            doTranslate(inputText.value, false, sourceLang); // Translate but don't auto-play
-        }
-
-        setTimeout(() => {
-            swapButton.classList.remove('swapping');
-            status.textContent = "Languages swapped.";
-        }, 300);
-    });
-
     // --- 4. Text-to-Speech Function ---
     const playTranslation = (textToSpeak) => {
         if (isMuted) return;
@@ -149,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
             let voice = voices.find(v => v.name === selectedVoiceName);
             
-            // 2. Fallback: Find the first voice for the target language
+            // 2. If no specific choice, find the *first available voice*
             if (!voice) {
                 voice = voices.find(v => v.lang.startsWith(langSelectTarget.value));
             }
@@ -231,6 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
             outputText.value = translatedText;
             status.textContent = "";
             
+            // This is still needed for the voice dropdown
             populateVoiceList();
 
             if (autoPlay) {
@@ -242,10 +212,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
     
-    // Translate on type
+    // NEW LOGIC: Trigger translation on Enter key press
+    inputText.addEventListener("keyup", (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevents a new line in the text area
+            const sourceLang = langSelectSource.value.split('-')[0];
+            doTranslate(inputText.value, true, sourceLang); // Auto-play translation
+        }
+    });
+
+    // Translate on blur (secondary trigger)
     inputText.addEventListener("blur", () => {
         const sourceLang = langSelectSource.value.split('-')[0];
-        doTranslate(inputText.value, true, sourceLang); // auto-play
+        doTranslate(inputText.value, true, sourceLang);
     });
 
     // --- 7. Helper Button Logic ---
@@ -268,9 +247,4 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
     });
-
-    // Initial check to populate UI
-    // loadAndDisplayVoices is commented out because we hard-coded the list
-    // This is the simplest, most stable version.
-    populateVoiceList(); 
 });
