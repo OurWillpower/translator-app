@@ -17,44 +17,38 @@
     <div class="translator">
         <h1>Travel Translator</h1>
         
-        <div class="controls-wrapper">
-            <div class="controls">
-                <div class="select-wrapper" id="from-select-wrapper">
-                    <label for="language-select-source">From:</label>
-                    <select id="language-select-source">
-                        <option value="en-US">English (US)</option>
-                        <option value="en-GB">English (UK)</option>
-                        <option value="hi-IN">Hindi</option>
-                        <option value="mr-IN">Marathi</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="ja-JP">Japanese</option>
-                        <option value="zh-CN">Chinese (Mandarin)</option>
-                        <option value="auto">Auto-Detect (Typing)</option> 
-                    </select>
-                </div>
-    
-                <button id="swap-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"></path></svg>
-                </button>
-    
-                <div class="select-wrapper">
-                    <label for="language-select-target">To:</label>
-                    <select id="language-select-target">
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
-                        <option value="de">German</option>
-                        <option value="hi">Hindi</option>
-                        <option value="mr">Marathi</option>
-                        <option value="ja">Japanese</option>
-                        <option value="zh">Chinese</option>
-                    </select>
-                </div>
+        <div class="controls">
+            <div class="select-wrapper">
+                <label for="language-select-source">From:</label>
+                <select id="language-select-source">
+                    <option value="en-US">English (US)</option>
+                    <option value="en-GB">English (UK)</option>
+                    <option value="hi-IN">Hindi</option>
+                    <option value="mr-IN">Marathi</option>
+                    <option value="es-ES">Spanish</option>
+                    <option value="fr-FR">French</option>
+                    <option value="de-DE">German</option>
+                    <option value="ja-JP">Japanese</option>
+                    <option value="zh-CN">Chinese (Mandarin)</option>
+                    <option value="auto">Auto-Detect (Typing)</option> 
+                </select>
+            </div>
+
+            <div class="select-wrapper">
+                <label for="language-select-target">To:</label>
+                <select id="language-select-target">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="hi">Hindi</option>
+                    <option value="mr">Marathi</option>
+                    <option value="ja">Japanese</option>
+                    <option value="zh">Chinese</option>
+                </select>
             </div>
         </div>
-
+            
         <div class="select-wrapper" id="voice-select-wrapper">
             <label for="voice-select">Voice:</label>
             <select id="voice-select">
@@ -66,7 +60,7 @@
 
         
         <div class="text-boxes">
-            <textarea id="input-text" placeholder="Speak or type here..." autofocus></textarea>
+            <textarea id="input-text" placeholder="Speak or type here..." autofocus></textarea> 
             <textarea id="output-text" placeholder="Translation appears here..." readonly></textarea>
         </div>
         
