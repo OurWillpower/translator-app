@@ -228,35 +228,3 @@ textarea {
     margin-bottom: 5px; 
 }
 
-/* Final Color Legend Styling */
-.color-legend {
-    display: flex;
-    justify-content: flex-end; /* Align right, under the button row */
-    gap: 20px;
-    font-size: 0.85rem;
-    color: #aaa;
-    padding-top: 5px;
-    border-top: 1px dashed #333;
-}
-
-.legend-text {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.legend-color-white {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    border: 1px solid #444;
-}
-
-.legend-color-green {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #64ffda;
-    border: 1px solid #444;
-}
