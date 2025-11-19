@@ -231,7 +231,7 @@ textarea {
 
 /* NEW: APP FOOTER STYLES */
 #app-footer {
-    color: #8e8e93;
+    color: #ffffff; /* White text */
     font-size: 0.70rem;
     text-align: center;
     margin-top: 30px;
