@@ -15,7 +15,14 @@
     <meta name="theme-color" content="#1e1e1e"/> </head>
 <body>
     <div class="translator">
-        <h1>Speakly <small>| Speak on the Go |</small></h1>
+        <h1>
+            <svg id="app-logo-svg" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="#007aff" fill="#007aff20" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+              <path stroke="#FFD700" d="M19 12a7 7 0 00-14 0c0 4 3 7 7 7s7-3 7-7z" fill="none"/>
+              <line stroke="#ffffff" x1="12" y1="19" x2="12" y2="23" stroke-width="1.5"/>
+            </svg>
+            Speakly <small>| Speak on the Go |</small>
+        </h1>
         
         <div class="controls">
             <div class="select-wrapper">
@@ -76,8 +83,7 @@
             </button>
 
             <button id="copy-button" class="icon-button">
-                <svg id="icon-copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"></path></svg>
-                <svg id="icon-check" style="display:none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"></path></svg>
                 Copy
             </button>
         </div>
