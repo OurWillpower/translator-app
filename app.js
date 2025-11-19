@@ -59,8 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Determine the Output Language (PRIORITIZING HINDI)
     const sourceBaseLang = defaultSourceLangValue.split('-')[0];
     
-    // Final check for Indian locales based on browser setting (hi, mr, ta)
-    if (sourceBaseLang === 'hi' || sourceBaseLang === 'mr' || sourceBaseLang === 'ta') {
+    // Final check for Indian locales (HI, MR, PA, TA, TE, etc.)
+    if (sourceBaseLang === 'hi' || sourceBaseLang === 'mr' || sourceBaseLang === 'ta' || sourceBaseLang === 'pa' || sourceBaseLang === 'te' || sourceBaseLang === 'gu') {
          // If user's browser language is an Indian language, default the output to English
          defaultTargetLangValue = 'en';
     } else {
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                status.textContent = "THIS VOICE OUTPUT REQUIRES SPEAKLY PRO."; 
+                status.textContent = "Voice output requires Speakly Pro."; 
                 return; 
             }
             
@@ -261,42 +261,4 @@ document.addEventListener("DOMContentLoaded", () => {
         doTranslate(inputText.value, true, sourceLang); // auto-play
     });
 
-    // NEW LOGIC: Trigger translation on Enter key press
-    inputText.addEventListener("keyup", (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Prevents a new line in the text area
-            const sourceLang = langSelectSource.value.split('-')[0];
-            doTranslate(inputText.value, true, sourceLang); // Auto-play translation
-        }
-    });
-
-    // --- 7. Helper Button Logic (COPY CONFIRMATION) ---
-    clearButton.addEventListener("click", () => {
-        inputText.value = "";
-        outputText.value = "";
-        status.textContent = "";
-    });
-    copyButton.addEventListener("click", () => {
-        const textToCopy = outputText.value;
-        if (textToCopy) {
-            navigator.clipboard.writeText(textToCopy)
-                .then(() => {
-                    // Show confirmation visual
-                    copyButton.classList.add('copied');
-                    iconCopy.style.display = 'none';
-                    iconCheck.style.display = 'block';
-
-                    // Revert after 1.5 seconds
-                    setTimeout(() => {
-                        copyButton.classList.remove('copied');
-                        iconCopy.style.display = 'block';
-                        iconCheck.style.display = 'none';
-                    }, 1500);
-                })
-                .catch(err => {
-                    status.textContent = "Failed to copy.";
-                    console.error("Failed to copy text: ", err);
-                });
-        }
-    });
-});
+    // NEW LOGIC: Trigger
