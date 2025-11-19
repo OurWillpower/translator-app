@@ -28,25 +28,6 @@ body {
     box-shadow: 0 8px 32px rgba(255, 215, 0, 0.1); 
 }
 
-/* NEW LOGO STYLES */
-.app-logo {
-    display: inline-block;
-    margin-bottom: 10px;
-}
-.app-logo svg path {
-    /* Style for the SVG paths for better contrast */
-    stroke: #ffffff; /* Default white for paths */
-}
-
-/* Specific arrow/fill overrides for the logo */
-.app-logo svg path:nth-child(2) {
-    stroke: #FFD700; /* Gold arrow */
-}
-.app-logo svg path:nth-child(3) {
-    stroke: #007aff; /* Blue arrow */
-}
-
-
 h1 {
     font-size: 1.8rem; 
     color: #ffffff; /* White text */
@@ -62,7 +43,6 @@ h1 small {
     color: #8e8e93; 
     margin-top: 5px;
 }
-
 
 /* Updated Controls Styling */
 .controls {
@@ -83,7 +63,6 @@ h1 small {
 #voice-select-wrapper {
     margin-bottom: 16px;
 }
-
 
 .select-wrapper label {
     font-size: 0.9rem;
@@ -123,6 +102,11 @@ h1 small {
     box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4); 
 }
 
+/* NEW: Copy Button Confirmation Style */
+#copy-button.copied {
+    background-color: #34c759; /* Green color for confirmation */
+    box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4);
+}
 
 .text-boxes {
     display: flex;
