@@ -59,11 +59,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Determine the Output Language (PRIORITIZING HINDI)
     const sourceBaseLang = defaultSourceLangValue.split('-')[0];
     
+    // Final check for Indian locales based on browser setting (hi, mr, ta)
     if (sourceBaseLang === 'hi' || sourceBaseLang === 'mr' || sourceBaseLang === 'ta') {
          // If user's browser language is an Indian language, default the output to English
          defaultTargetLangValue = 'en';
     } else {
-         // For all other languages (like English or Spanish), default the output to Hindi (Business Requirement)
+         // For all other languages (like English or Spanish), default the output to Hindi
          defaultTargetLangValue = 'hi';
     }
 
