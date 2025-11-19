@@ -119,33 +119,39 @@ h1 small {
     box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4); 
 }
 
-/* NEW DEMARCATION STYLES */
+/* FINAL DEMARCATION STYLES - Made the border obvious */
 .text-boxes {
     /* Visual separation from the button above */
-    border: 1px solid #444; 
-    border-radius: 12px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2); /* Inner shadow for depth */
+    border: 3px solid transparent; 
+    border-radius: 16px; /* Match translator card radius */
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4); /* Inner shadow for depth */
     background-color: #1a1a1a; /* Dark background inside the box */
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin-bottom: 16px;
+
+    /* --- NEW: Border Gradient for VISUAL PUNCH --- */
+    background-image: linear-gradient(#1a1a1a, #1a1a1a), 
+                      linear-gradient(135deg, #FFD700, #007aff); /* Gold to Blue */
+    background-origin: border-box;
+    background-clip: padding-box, border-box; 
 }
 
 
 textarea {
-    width: 100%; /* NEW: Use 100% */
+    width: 100%; 
     min-height: 120px; 
     font-size: 1rem;
     padding: 12px 16px;
     border-radius: 8px;
-    border: 1px solid #333; /* Soft inner border */
+    border: 1px solid #333; 
     font-family: inherit;
     box-sizing: border-box; 
-    background-color: #2c2c2c; /* Input area background */
+    background-color: #2c2c2c; 
     color: #ffffff; 
-    resize: none; /* Disallow resizing */
+    resize: none; 
 }
 
 #input-text {
