@@ -31,12 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get the icons for mute button control
     const iconSpeaker = document.getElementById("icon-speaker");
     const iconMute = document.getElementById("icon-mute");
+    // NEW: Get the copy and check icons
+    const iconCopy = document.getElementById("icon-copy");
+    const iconCheck = document.getElementById("icon-check");
 
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; 
     recognition.lang = langSelectSource.value; 
 
-    let voices = []; 
     let isMuted = false;
     let isListening = false; 
 
@@ -114,11 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (textToSpeak) {
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
             
-            // 1. Try to find specific voice based on user selection
             const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
             let voice = voices.find(v => v.name === selectedVoiceName);
             
-            // 2. If no specific choice, find the *first available voice*
             if (!voice) {
                 voice = voices.find(v => v.lang.startsWith(langSelectTarget.value));
             }
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isListening = false;
     };
 
-    // Tap-to-start/Tap-to-stop logic
+    // "tap-on/tap-off" logic
     talkButton.addEventListener("click", () => {
         if (!isListening) {
             try {
@@ -188,6 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
             outputText.value = "";
             return;
         }
+        
+        loadingIndicator.style.display = 'flex'; // Show the spinner
+
         status.textContent = "Translating...";
         const targetLang = langSelectTarget.value;
         
@@ -200,18 +203,26 @@ document.addEventListener("DOMContentLoaded", () => {
             outputText.value = translatedText;
             status.textContent = "";
             
-            // This is still needed for the voice dropdown
             populateVoiceList();
 
             if (autoPlay) {
                 playTranslation(translatedText);
             }
+
         } catch (error) {
             status.textContent = "Translation failed. Check internet.";
             console.error(error);
+        } finally {
+            loadingIndicator.style.display = 'none'; // Hide the spinner
         }
     };
     
+    // Translate on type
+    inputText.addEventListener("blur", () => {
+        const sourceLang = langSelectSource.value.split('-')[0];
+        doTranslate(inputText.value, true, sourceLang); // auto-play
+    });
+
     // NEW LOGIC: Trigger translation on Enter key press
     inputText.addEventListener("keyup", (event) => {
         if (event.key === 'Enter') {
@@ -221,13 +232,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Translate on blur (secondary trigger)
-    inputText.addEventListener("blur", () => {
-        const sourceLang = langSelectSource.value.split('-')[0];
-        doTranslate(inputText.value, true, sourceLang);
-    });
 
-    // --- 7. Helper Button Logic ---
+    // --- 7. Helper Button Logic (COPY CONFIRMATION) ---
     clearButton.addEventListener("click", () => {
         inputText.value = "";
         outputText.value = "";
@@ -238,8 +244,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (textToCopy) {
             navigator.clipboard.writeText(textToCopy)
                 .then(() => {
-                    status.textContent = "Translation copied to clipboard!";
-                    setTimeout(() => { status.textContent = ""; }, 2000);
+                    // Show confirmation visual
+                    copyButton.classList.add('copied');
+                    iconCopy.style.display = 'none';
+                    iconCheck.style.display = 'block';
+
+                    // Revert after 1.5 seconds
+                    setTimeout(() => {
+                        copyButton.classList.remove('copied');
+                        iconCopy.style.display = 'block';
+                        iconCheck.style.display = 'none';
+                    }, 1500);
                 })
                 .catch(err => {
                     status.textContent = "Failed to copy.";
