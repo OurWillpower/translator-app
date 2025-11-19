@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                status.textContent = "Voice output requires Speakly Pro."; 
+                status.textContent = "THIS VOICE OUTPUT REQUIRES SPEAKLY PRO."; 
                 return; 
             }
             
