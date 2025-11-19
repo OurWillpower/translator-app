@@ -215,17 +215,18 @@ textarea {
     background-color: #3a3a3c;
 }
 
-/* Hover effects */
-#mute-button:hover { background-color: #4a4a4c; }
-#clear-button:hover { background-color: #4a4a4c; }
-#copy-button:hover { background-color: #4a4a4c; }
-
-
 .status {
     color: #8e8e93; 
     min-height: 1.2em;
     margin-top: 24px; 
     margin-bottom: 5px; 
+}  
+
+/* Hover effects */
+#mute-button:hover { background-color: #4a4a4c; }
+#clear-button:hover { background-color: #4a4a4c; }
+#copy-button:hover { background-color: #4a4a4c; }
+
 }
 
 /* NEW: APP FOOTER STYLES */
