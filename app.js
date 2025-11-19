@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const clearButton = document.getElementById("clear-button");
     const copyButton = document.getElementById("copy-button");
     const muteButton = document.getElementById("mute-button");
+    const loadingIndicator = document.getElementById("loading-indicator"); 
     
     // Get the icons for mute button control
     const iconSpeaker = document.getElementById("icon-speaker");
@@ -35,12 +36,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconCopy = document.getElementById("icon-copy");
     const iconCheck = document.getElementById("icon-check");
     
-    // *** CRITICAL FIX: The loadingIndicator is now correctly defined ***
-    const loadingIndicator = document.getElementById("loading-indicator"); 
-
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; 
+    
+    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE ---
+    const userLang = navigator.language || navigator.userLanguage; 
+    
+    // Find the option element in the "From" list that matches the user's language setting (e.g., 'hi-IN').
+    // If found, set it as selected.
+    const sourceOptions = Array.from(langSelectSource.options);
+    const matchingOption = sourceOptions.find(option => option.value === userLang);
+    if (matchingOption) {
+        matchingOption.selected = true;
+    }
+    // Set recognition language based on the newly defaulted value
     recognition.lang = langSelectSource.value; 
+    // --- END NEW FEATURE ---
+
 
     let voices = []; 
     let isMuted = false;
@@ -101,9 +113,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 languages.add(langCode);
             }
 
-            // We do NOT clear the langSelectTarget here, as it is hard-coded in HTML.
-            // We rely on the hard-coded list for stability.
-
+            // The 'To' list is hard-coded in HTML for stability, 
+            // so we only run populateVoiceList() here.
             populateVoiceList(); 
         } else {
             setTimeout(loadAndDisplayVoices, 100);
