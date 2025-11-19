@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (textToSpeak) {
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
             
-            const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
+            const selectedVoiceName = voiceSelect.options[0] ? voiceSelect.options[0].getAttribute("data-name") : null;
             let voice = voices.find(v => v.name === selectedVoiceName);
             
             if (!voice) {
