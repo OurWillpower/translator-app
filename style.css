@@ -34,15 +34,27 @@ h1 {
     margin-top: 0;
     margin-bottom: 24px; 
     font-weight: 700; 
+    
+    /* NEW: Flexbox to center the logo and text together */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Space between logo and text */
+}
+
+h1 svg {
+    /* Style for the logo SVG itself */
+    fill: none;
+    stroke: #ffffff;
 }
 
 h1 small {
-    display: block; 
     font-size: 0.5em; 
     font-weight: 500; 
     color: #8e8e93; 
     margin-top: 5px;
 }
+
 
 /* Updated Controls Styling */
 .controls {
@@ -63,6 +75,7 @@ h1 small {
 #voice-select-wrapper {
     margin-bottom: 16px;
 }
+
 
 .select-wrapper label {
     font-size: 0.9rem;
@@ -102,11 +115,6 @@ h1 small {
     box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4); 
 }
 
-/* NEW: Copy Button Confirmation Style */
-#copy-button.copied {
-    background-color: #34c759; /* Green color for confirmation */
-    box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4);
-}
 
 .text-boxes {
     display: flex;
