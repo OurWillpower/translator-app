@@ -38,11 +38,43 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const recognition = new SpeechRecognition();
     recognition.imits = false; 
-    recognition.lang = langSelectSource.value; 
 
     let voices = []; 
     let isMuted = false;
     let isListening = false; 
+
+    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE SETTINGS ---
+    const userLang = navigator.language || navigator.userLanguage; // e.g., 'en-US' or 'hi-IN'
+    const userLocale = userLang.split('-')[1]; // e.g., 'US' or 'IN'
+    let defaultTargetLang = 'en'; // Default fallback for all non-specific regions
+
+    // Rule: If locale is India, default output is Hindi.
+    if (userLocale === 'IN') {
+        defaultTargetLang = 'hi';
+    } else if (userLang.startsWith('es') || userLang.startsWith('fr')) {
+        // If they speak Spanish/French, assume they want English output
+        defaultTargetLang = 'en';
+    }
+    
+    // --- SET INITIAL DROPDOWNS ---
+    const sourceOptions = Array.from(langSelectSource.options);
+    const targetOptions = Array.from(langSelectTarget.options);
+    
+    // 1. Set the "From" (Input) Language based on the full locale
+    const matchingSourceOption = sourceOptions.find(option => option.value === userLang);
+    if (matchingSourceOption) {
+        matchingSourceOption.selected = true;
+    }
+    
+    // 2. Set the "To" (Output) Language based on our derived default
+    const matchingTargetOption = targetOptions.find(option => option.value === defaultTargetLang);
+    if (matchingTargetOption) {
+        matchingTargetOption.selected = true;
+    }
+    
+    // Set initial recognition language (CRITICAL for first tap)
+    recognition.lang = langSelectSource.value; 
+    // --- END AUTO-DEFAULT SETTINGS ---
 
     // --- 1. Populate Voice List ---
     function populateVoiceList() {
@@ -167,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isListening = false;
     };
 
-    // "tap-on/tap-off" logic
+    // Tap-to-start/Tap-to-stop logic
     talkButton.addEventListener("click", () => {
         if (!isListening) {
             try {
