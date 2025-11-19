@@ -1,16 +1,16 @@
 {
-  "short_name": "Translator",
-  "name": "Travel Translator",
+  "short_name": "SpeaklyOne",
+  "name": "Speakly | Speak on the Go",
   "icons": [
-    {
-      "src": "https://www.gstatic.com/images/branding/product/1x/translate_2020q4_128dp.png",
-      "type": "image/png",
-      "sizes": "128x128"
-    },
     {
       "src": "https://www.gstatic.com/images/branding/product/1x/translate_2020q4_192dp.png",
       "type": "image/png",
       "sizes": "192x192"
+    },
+    {
+      "src": "https://www.gstatic.com/images/branding/product/1x/translate_2020q4_512dp.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
   "start_url": ".",
