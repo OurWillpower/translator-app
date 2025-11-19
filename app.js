@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconCheck = document.getElementById("icon-check");
     
     const recognition = new SpeechRecognition();
-    recognition.interimResults = false; 
+    recognition.imits = false; 
     recognition.lang = langSelectSource.value; 
 
     let voices = []; 
@@ -129,7 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                status.textContent = "No voice found for this language.";
+                // *** FINAL FIX: The app now speaks the monetization message ***
+                status.textContent = "Voice output requires Speakly Pro."; 
                 return; 
             }
             
