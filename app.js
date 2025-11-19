@@ -43,38 +43,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let isMuted = false;
     let isListening = false; 
 
-    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE SETTINGS ---
-    const userLang = navigator.language || navigator.userLanguage; // e.g., 'en-US' or 'hi-IN'
-    const userLocale = userLang.split('-')[1]; // e.g., 'US' or 'IN'
-    let defaultTargetLang = 'en'; // Default fallback for all non-specific regions
-
-    // Rule: If locale is India, default output is Hindi.
-    if (userLocale === 'IN') {
-        defaultTargetLang = 'hi';
-    } else if (userLang.startsWith('es') || userLang.startsWith('fr')) {
-        // If they speak Spanish/French, assume they want English output
-        defaultTargetLang = 'en';
-    }
-    
-    // --- SET INITIAL DROPDOWNS ---
-    const sourceOptions = Array.from(langSelectSource.options);
+    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE SETTINGS FIX ---
+    const userLang = navigator.language || navigator.userLanguage; 
     const targetOptions = Array.from(langSelectTarget.options);
     
-    // 1. Set the "From" (Input) Language based on the full locale
-    const matchingSourceOption = sourceOptions.find(option => option.value === userLang);
+    let defaultSourceLangValue = 'en-US'; // Default source is US English
+    let defaultTargetLangValue = 'hi';    // Default target is Hindi (Business Requirement)
+
+    // 1. Try to set the "From" language based on the user's full locale
+    const matchingSourceOption = Array.from(langSelectSource.options).find(option => option.value === userLang);
     if (matchingSourceOption) {
-        matchingSourceOption.selected = true;
+        defaultSourceLangValue = userLang;
     }
     
-    // 2. Set the "To" (Output) Language based on our derived default
-    const matchingTargetOption = targetOptions.find(option => option.value === defaultTargetLang);
+    // 2. Set initial dropdown values
+    langSelectSource.value = defaultSourceLangValue;
+    
+    // Check if Hindi/Marathi is the chosen source. If so, output should be English.
+    if (defaultSourceLangValue.startsWith('hi') || defaultSourceLangValue.startsWith('mr')) {
+         defaultTargetLangValue = 'en';
+    }
+
+    // Set the target language
+    const matchingTargetOption = targetOptions.find(option => option.value === defaultTargetLangValue);
     if (matchingTargetOption) {
-        matchingTargetOption.selected = true;
+        langSelectTarget.value = defaultTargetLangValue;
     }
     
     // Set initial recognition language (CRITICAL for first tap)
     recognition.lang = langSelectSource.value; 
-    // --- END AUTO-DEFAULT SETTINGS ---
+    // --- END AUTO-DEFAULT SETTINGS FIX ---
+
 
     // --- 1. Populate Voice List ---
     function populateVoiceList() {
@@ -161,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                status.textContent = "THIS VOICE OUTPUT REQUIRES SPEAKLY PRO."; 
+                status.textContent = "Voice output requires Speakly Pro."; 
                 return; 
             }
             
@@ -199,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isListening = false;
     };
 
-    // Tap-to-start/Tap-to-stop logic
+    // "tap-on/tap-off" logic
     talkButton.addEventListener("click", () => {
         if (!isListening) {
             try {
