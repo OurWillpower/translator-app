@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 utterance.voice = voice;
                 utterance.lang = voice.lang;
             } else {
-                // *** FINAL FIX: The app now speaks the monetization message ***
                 status.textContent = "Voice output requires Speakly Pro."; 
                 return; 
             }
