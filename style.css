@@ -28,6 +28,25 @@ body {
     box-shadow: 0 8px 32px rgba(255, 215, 0, 0.1); 
 }
 
+/* NEW LOGO STYLES */
+.app-logo {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+.app-logo svg path {
+    /* Style for the SVG paths for better contrast */
+    stroke: #ffffff; /* Default white for paths */
+}
+
+/* Specific arrow/fill overrides for the logo */
+.app-logo svg path:nth-child(2) {
+    stroke: #FFD700; /* Gold arrow */
+}
+.app-logo svg path:nth-child(3) {
+    stroke: #007aff; /* Blue arrow */
+}
+
+
 h1 {
     font-size: 1.8rem; 
     color: #ffffff; /* White text */
@@ -36,59 +55,35 @@ h1 {
     font-weight: 700; 
 }
 
-/* Updated Controls Styling */
-.controls-wrapper {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 16px;
+h1 small {
+    display: block; 
+    font-size: 0.5em; 
+    font-weight: 500; 
+    color: #8e8e93; 
+    margin-top: 5px;
 }
 
+
+/* Updated Controls Styling */
 .controls {
     display: flex;
-    align-items: flex-end; /* Align the dropdowns and swap button */
+    flex-wrap: wrap;
     gap: 16px;
+    margin-bottom: 16px;
 }
-
-/* NEW: Swap Button Styling */
-#swap-button {
-    background: none;
-    border: 2px solid #555;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    margin-bottom: 12px; /* Align with bottom of input boxes */
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-#swap-button:hover {
-    border-color: #007aff;
-}
-
-#swap-button svg {
-    width: 24px;
-    height: 24px;
-    fill: #007aff; /* Blue arrow color */
-    transition: transform 0.2s ease;
-}
-
-#swap-button.swapping {
-    transform: rotate(180deg);
-}
-
 
 .select-wrapper {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     flex: 1;
-    min-width: 150px; 
+    min-width: 200px; 
 }
 
 #voice-select-wrapper {
     margin-bottom: 16px;
 }
+
 
 .select-wrapper label {
     font-size: 0.9rem;
@@ -127,6 +122,7 @@ h1 {
     background-image: linear-gradient(45deg, #34c759, #28a745);
     box-shadow: 0 4px 20px rgba(52, 199, 89, 0.4); 
 }
+
 
 .text-boxes {
     display: flex;
@@ -199,9 +195,6 @@ textarea {
     background-color: #ff3b30; 
     color: #ffffff;
 }
-#mute-button.muted svg {
-    fill: #ffffff;
-}
 
 #clear-button {
     background-color: #3a3a3c;
@@ -215,6 +208,7 @@ textarea {
 #mute-button:hover { background-color: #4a4a4c; }
 #clear-button:hover { background-color: #4a4a4c; }
 #copy-button:hover { background-color: #4a4a4c; }
+
 
 .status {
     color: #8e8e93; 
