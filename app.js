@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. Populate Voice List ---
     function populateVoiceList() {
         const selectedLangCode = langSelectTarget.value;
-        const selectedVoiceName = voiceSelect.selectedOptions[0] ? voiceSelect.selectedOptions[0].getAttribute("data-name") : null;
+        const selectedVoiceName = voiceSelect.options[0] ? voiceSelect.options[0].getAttribute("data-name") : null;
 
         voiceSelect.innerHTML = '<option value="">Default</option>';
         
