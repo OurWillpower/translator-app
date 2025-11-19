@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconCopy = document.getElementById("icon-copy");
     const iconCheck = document.getElementById("icon-check");
     
-    // *** THE MISSING LINE - THIS FIXES THE CRASH ***
+    // *** CRITICAL FIX: The loadingIndicator is now correctly defined ***
     const loadingIndicator = document.getElementById("loading-indicator"); 
 
     const recognition = new SpeechRecognition();
