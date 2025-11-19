@@ -38,21 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; 
-    
-    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE ---
-    const userLang = navigator.language || navigator.userLanguage; 
-    
-    // Find the option element in the "From" list that matches the user's language setting (e.g., 'hi-IN').
-    // If found, set it as selected.
-    const sourceOptions = Array.from(langSelectSource.options);
-    const matchingOption = sourceOptions.find(option => option.value === userLang);
-    if (matchingOption) {
-        matchingOption.selected = true;
-    }
-    // Set recognition language based on the newly defaulted value
     recognition.lang = langSelectSource.value; 
-    // --- END NEW FEATURE ---
-
 
     let voices = []; 
     let isMuted = false;
@@ -92,30 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. Load Voices ---
     function loadAndDisplayVoices() {
         voices = synthesis.getVoices();
-        
         if (voices.length > 0) {
-            
-            // This is our 100% reliable dictionary
-            const languageDictionary = {
-                "en": "English", "es": "Spanish", "fr": "French",
-                "de": "German", "hi": "Hindi", "mr": "Marathi",
-                "ja": "Japanese", "zh": "Chinese", "it": "Italian",
-                "pt": "Portuguese", "ru": "Russian", "ko": "Korean",
-                "ar": "Arabic", "el": "Greek", "he": "Hebrew",
-                "id": "Indonesian", "nl": "Dutch", "pl": "Polish",
-                "sv": "Swedish", "th": "Thai", "tr": "Turkish",
-                "vi": "Vietnamese", "fi": "Finnish"
-            };
-
-            const languages = new Set(); 
-            for (const voice of voices) {
-                const langCode = voice.lang.split('-')[0];
-                languages.add(langCode);
-            }
-
-            // The 'To' list is hard-coded in HTML for stability, 
-            // so we only run populateVoiceList() here.
-            populateVoiceList(); 
+            populateVoiceList();
         } else {
             setTimeout(loadAndDisplayVoices, 100);
         }
