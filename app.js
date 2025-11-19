@@ -31,14 +31,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Get the icons for mute button control
     const iconSpeaker = document.getElementById("icon-speaker");
     const iconMute = document.getElementById("icon-mute");
-    // NEW: Get the copy and check icons
+    // Get the copy and check icons
     const iconCopy = document.getElementById("icon-copy");
     const iconCheck = document.getElementById("icon-check");
+    
+    // *** THE MISSING LINE - THIS FIXES THE CRASH ***
+    const loadingIndicator = document.getElementById("loading-indicator"); 
 
     const recognition = new SpeechRecognition();
     recognition.interimResults = false; 
     recognition.lang = langSelectSource.value; 
 
+    let voices = []; 
     let isMuted = false;
     let isListening = false; 
 
@@ -76,8 +80,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 2. Load Voices ---
     function loadAndDisplayVoices() {
         voices = synthesis.getVoices();
+        
         if (voices.length > 0) {
-            populateVoiceList();
+            
+            // This is our 100% reliable dictionary
+            const languageDictionary = {
+                "en": "English", "es": "Spanish", "fr": "French",
+                "de": "German", "hi": "Hindi", "mr": "Marathi",
+                "ja": "Japanese", "zh": "Chinese", "it": "Italian",
+                "pt": "Portuguese", "ru": "Russian", "ko": "Korean",
+                "ar": "Arabic", "el": "Greek", "he": "Hebrew",
+                "id": "Indonesian", "nl": "Dutch", "pl": "Polish",
+                "sv": "Swedish", "th": "Thai", "tr": "Turkish",
+                "vi": "Vietnamese", "fi": "Finnish"
+            };
+
+            const languages = new Set(); 
+            for (const voice of voices) {
+                const langCode = voice.lang.split('-')[0];
+                languages.add(langCode);
+            }
+
+            // We do NOT clear the langSelectTarget here, as it is hard-coded in HTML.
+            // We rely on the hard-coded list for stability.
+
+            populateVoiceList(); 
         } else {
             setTimeout(loadAndDisplayVoices, 100);
         }
@@ -231,7 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
             doTranslate(inputText.value, true, sourceLang); // Auto-play translation
         }
     });
-
 
     // --- 7. Helper Button Logic (COPY CONFIRMATION) ---
     clearButton.addEventListener("click", () => {
