@@ -132,13 +132,10 @@ function setDefaultSourceLanguage() {
             const exists = options.some(o => o.value === defaultCode);
             if (exists) {
                 sourceSelect.value = defaultCode;
-                // Optional: uncomment next line if you want a visible message when it switches
-                // showStatus(`Default input language set to ${sourceSelect.options[sourceSelect.selectedIndex].text}.`);
             }
         }
     } catch (e) {
         console.error("Could not set default source language:", e);
-        // If anything fails, keep the HTML default (English US)
     }
 }
 
@@ -189,7 +186,6 @@ async function translate(text) {
     } catch (err) {
         console.error("Translation error:", err);
 
-        // If we reach here and device is now offline, show your offline message
         if (isOffline()) {
             showStatus(OFFLINE_MESSAGE, true);
         } else {
@@ -224,7 +220,7 @@ function setupRecognition() {
     recognition.onstart = () => {
         isListening = true;
         talkButton.style.opacity = "0.85";
-        const span = talkButton.querySelector("span");
+        const span = talkButton.querySelector("span:last-child");
         if (span) span.textContent = "Listening...";
         showStatus("Listening… speak now.");
     };
@@ -232,7 +228,7 @@ function setupRecognition() {
     recognition.onend = () => {
         isListening = false;
         talkButton.style.opacity = "1";
-        const span = talkButton.querySelector("span");
+        const span = talkButton.querySelector("span:last-child");
         if (span) span.textContent = "Press to Speak";
         if (loadingIndicator.style.display === "none") {
             showStatus("");
@@ -283,7 +279,6 @@ function populateVoices() {
 
 /* -------------------- Event listeners -------------------- */
 
-// Speech button
 talkButton.addEventListener("click", () => {
     if (!recognition) {
         showStatus(
@@ -312,7 +307,6 @@ talkButton.addEventListener("click", () => {
     }
 });
 
-// Mute
 muteButton.addEventListener("click", () => {
     isMuted = !isMuted;
     if (isMuted) {
@@ -326,14 +320,12 @@ muteButton.addEventListener("click", () => {
     }
 });
 
-// Clear
 clearButton.addEventListener("click", () => {
     inputTextEl.value = "";
     outputTextEl.value = "";
     showStatus("");
 });
 
-// Copy
 copyButton.addEventListener("click", async () => {
     const text = outputTextEl.value.trim();
     if (!text) {
@@ -356,7 +348,6 @@ copyButton.addEventListener("click", async () => {
     }
 });
 
-// Type-to-translate with small delay
 inputTextEl.addEventListener("input", () => {
     const text = inputTextEl.value;
     if (debounceTimer) {
@@ -372,7 +363,6 @@ inputTextEl.addEventListener("input", () => {
     }, 700);
 });
 
-// Live online/offline status updates
 window.addEventListener("offline", () => {
     showStatus(OFFLINE_MESSAGE, true);
 });
@@ -384,7 +374,7 @@ window.addEventListener("online", () => {
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-    setDefaultSourceLanguage();  // Try to set Hindi/Marathi for India
+    setDefaultSourceLanguage();
     setupRecognition();
     populateVoices();
 
