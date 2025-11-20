@@ -43,36 +43,6 @@ function setLoading(isLoading) {
     loadingIndicator.style.display = isLoading ? "flex" : "none";
 }
 
-function savePreferences() {
-    try {
-        localStorage.setItem("speakly_source_lang", sourceSelect.value);
-        localStorage.setItem("speakly_target_lang", targetSelect.value);
-        localStorage.setItem("speakly_voice", voiceSelect.value);
-    } catch (e) {
-        // ignore
-    }
-}
-
-function restorePreferences() {
-    try {
-        const src = localStorage.getItem("speakly_source_lang");
-        const tgt = localStorage.getItem("speakly_target_lang");
-        const voiceId = localStorage.getItem("speakly_voice");
-
-        if (src && [...sourceSelect.options].some(o => o.value === src)) {
-            sourceSelect.value = src;
-        }
-        if (tgt && [...targetSelect.options].some(o => o.value === tgt)) {
-            targetSelect.value = tgt;
-        }
-        if (voiceId) {
-            voiceSelect.value = voiceId;
-        }
-    } catch (e) {
-        // ignore
-    }
-}
-
 // map "en-US" -> "en", "hi-IN" -> "hi"
 function mapSourceForTranslate(code) {
     if (!code || code === "auto") return "auto";
@@ -100,7 +70,7 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
-/* -------------------- Translation -------------------- */
+/* -------------------- Translation (MyMemory) -------------------- */
 
 async function translate(text) {
     const trimmed = (text || "").trim();
@@ -109,15 +79,15 @@ async function translate(text) {
         return;
     }
 
-    const sourceLang = mapSourceForTranslate(sourceSelect.value); // "en-US" -> "en"
+    // Read exactly what is selected NOW
+    const sourceLang = mapSourceForTranslate(sourceSelect.value); // e.g. "en-US" -> "en"
     const targetLang = targetSelect.value || "en";
 
-    // MyMemory expects "auto" or two-letter codes like "en|es"
     const srcCode = sourceLang === "auto" ? "auto" : sourceLang;
     const tgtCode = targetLang;
 
     setLoading(true);
-    showStatus("Translating...");
+    showStatus(`Translating from ${srcCode} to ${tgtCode}...`);
 
     try {
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
@@ -142,7 +112,7 @@ async function translate(text) {
     } catch (err) {
         console.error(err);
         showStatus(
-            "Could not translate right now. Please check your internet or try a different language.",
+            "Could not translate right now. Please check your internet or try a different language pair.",
             true
         );
     } finally {
@@ -224,22 +194,9 @@ function populateVoices() {
             option.textContent = `${voice.name} (${voice.lang})`;
             voiceSelect.appendChild(option);
         });
-
-    try {
-        const savedVoice = localStorage.getItem("speakly_voice");
-        if (savedVoice && [...voiceSelect.options].some(o => o.value === savedVoice)) {
-            voiceSelect.value = savedVoice;
-        }
-    } catch (e) {
-        // ignore
-    }
 }
 
 /* -------------------- Event listeners -------------------- */
-
-sourceSelect.addEventListener("change", savePreferences);
-targetSelect.addEventListener("change", savePreferences);
-voiceSelect.addEventListener("change", savePreferences);
 
 talkButton.addEventListener("click", () => {
     if (!recognition) {
@@ -256,11 +213,7 @@ talkButton.addEventListener("click", () => {
 
     try {
         const src = sourceSelect.value;
-        if (src && src !== "auto") {
-            recognition.lang = src;
-        } else {
-            recognition.lang = "en-US";
-        }
+        recognition.lang = src && src !== "auto" ? src : "en-US";
         recognition.start();
     } catch (err) {
         console.error(err);
@@ -309,6 +262,7 @@ copyButton.addEventListener("click", async () => {
     }
 });
 
+// Type-to-translate with small delay
 inputTextEl.addEventListener("input", () => {
     const text = inputTextEl.value;
     if (debounceTimer) {
@@ -327,7 +281,6 @@ inputTextEl.addEventListener("input", () => {
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-    restorePreferences();
     setupRecognition();
     populateVoices();
 
