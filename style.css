@@ -15,8 +15,8 @@ html, body {
 body {
     font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     background:
-        radial-gradient(circle at top left, #145235 0, transparent 55%),
-        radial-gradient(circle at bottom right, #0c3b28 0, #020806 65%);
+        radial-gradient(circle at top left, #184f37 0, transparent 55%),
+        radial-gradient(circle at bottom right, #052216 0, #020806 70%);
     color: #fdf8e9;
     display: flex;
     justify-content: center;
@@ -24,63 +24,94 @@ body {
     padding: 16px;
 }
 
-/* ===== APP “PHONE” CARD WITH GOLD BORDER ===== */
+/* ===== APP “PHONE” CARD WITH ORNATE GOLD FRAME ===== */
 
 .app-shell {
     position: relative;
     width: 100%;
     max-width: 420px;
     margin: auto;
-    border-radius: 26px;
+    border-radius: 30px;
     overflow: hidden;
-    background: linear-gradient(160deg, #04150e 0%, #03100b 50%, #010806 100%);
+    background: radial-gradient(circle at top, #07190f 0%, #020806 60%, #000000 100%);
     box-shadow:
-        0 22px 50px rgba(0, 0, 0, 0.85),
-        0 0 0 1px rgba(255, 223, 132, 0.06);
+        0 28px 60px rgba(0, 0, 0, 0.95),
+        0 0 60px rgba(0, 0, 0, 0.95);
     display: flex;
     flex-direction: column;
 }
 
-/* Decorative gold frame */
+/* Outer glowing gold frame (continuous border) */
 .app-shell::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 28px;
-    padding: 2px;
-    background: linear-gradient(135deg,
-        rgba(255, 229, 166, 0.95),
-        rgba(198, 159, 74, 0.9),
-        rgba(255, 243, 190, 0.85));
+    border-radius: 30px;
+    padding: 3px;
+    background:
+        conic-gradient(
+            from 0deg,
+            #ffefc5,
+            #f5c85c,
+            #d4992b,
+            #ffefc5,
+            #f5c85c,
+            #d4992b,
+            #ffefc5
+        );
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
+    box-shadow:
+        0 0 24px rgba(255, 236, 180, 0.7),
+        0 0 40px rgba(222, 176, 75, 0.7);
+}
+
+/* Decorative corner flourishes / glow */
+.app-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 14px 14px, rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at calc(100% - 14px) 14px, rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at 14px calc(100% - 14px), rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at 50% 0%, rgba(255, 237, 185, 0.3), transparent 70%),
+        radial-gradient(circle at 50% 100%, rgba(255, 218, 140, 0.25), transparent 70%);
+    opacity: 0.95;
+}
+
+/* Inner panel (actual app content) */
+.app-shell > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* ===== HEADER ===== */
 
 .app-header {
-    position: relative;
-    z-index: 1;
     padding: 14px 18px 12px;
     background:
-        radial-gradient(circle at top left, rgba(255, 250, 210, 0.25), transparent 60%),
-        linear-gradient(135deg, #245938, #0d3c2b 55%, #103624 100%);
-    border-bottom: 1px solid rgba(248, 217, 120, 0.25);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+        radial-gradient(circle at top left, rgba(255, 250, 210, 0.35), transparent 60%),
+        linear-gradient(135deg, #215636 0%, #0b3626 50%, #0d2b1f 100%);
+    border-bottom: 1px solid rgba(248, 217, 120, 0.4);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.7);
 }
 
 .app-header::after {
     content: "";
     position: absolute;
-    inset-inline: 16px;
+    inset-inline: 18px;
     bottom: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.8), transparent);
-    opacity: 0.7;
+    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.9), transparent);
+    opacity: 0.8;
 }
 
 .app-title {
@@ -91,7 +122,9 @@ body {
 
 #app-logo-svg {
     flex-shrink: 0;
-    filter: drop-shadow(0 0 6px rgba(255, 223, 132, 0.55));
+    filter:
+        drop-shadow(0 0 6px rgba(255, 223, 132, 0.8))
+        drop-shadow(0 0 12px rgba(110, 78, 16, 0.9));
 }
 
 .app-title-text {
@@ -102,7 +135,7 @@ body {
 .app-name {
     font-size: 1.2rem;
     font-weight: 800;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: #ffe9a0;
 }
@@ -116,8 +149,6 @@ body {
 /* ===== MAIN AREA ===== */
 
 .translator {
-    position: relative;
-    z-index: 1;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -139,11 +170,11 @@ body {
 /* ===== CARDS ===== */
 
 .card {
-    background: radial-gradient(circle at top, #091f15 0, #04110b 65%);
+    background: radial-gradient(circle at top, #081f16 0, #03100b 65%);
     border-radius: 18px;
     padding: 12px 13px;
-    border: 1px solid rgba(188, 158, 82, 0.25);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(188, 158, 82, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
 }
 
 /* ==== LANGUAGE SELECTION ==== */
@@ -175,7 +206,7 @@ select {
     background:
         radial-gradient(circle at top, #173826 0, #07140d 70%);
     border-radius: 999px;
-    border: 1px solid rgba(199, 174, 94, 0.7);
+    border: 1px solid rgba(199, 174, 94, 0.9);
     padding: 8px 30px 8px 11px;
     color: #fdf5dd;
     font-size: 0.86rem;
@@ -189,7 +220,6 @@ select {
         box-shadow 0.15s ease,
         background 0.15s ease,
         transform 0.08s ease;
-    /* gold arrow */
     background-image:
         linear-gradient(45deg, transparent 50%, #f3dd9a 50%),
         linear-gradient(135deg, #f3dd9a 50%, transparent 50%);
@@ -200,21 +230,23 @@ select {
     background-repeat: no-repeat;
 }
 
-/* Hover / focus effects for dropdown (makes it feel fancy) */
+/* Fancy hover / focus */
 select:hover {
     border-color: #ffe7a5;
-    box-shadow: 0 0 0 1px rgba(255, 232, 158, 0.6);
+    box-shadow:
+        0 0 0 1px rgba(255, 232, 158, 0.7),
+        0 0 14px rgba(255, 228, 147, 0.45);
     transform: translateY(-0.5px);
 }
 
 select:focus {
     border-color: #ffe292;
     box-shadow:
-        0 0 0 1px rgba(255, 232, 158, 0.9),
-        0 0 14px rgba(255, 225, 145, 0.6);
+        0 0 0 1px rgba(255, 232, 158, 0.95),
+        0 0 18px rgba(255, 225, 145, 0.8);
 }
 
-/* OPEN DROPDOWN LIST ITEMS */
+/* OPEN DROPDOWN LIST ITEMS (for desktop + some mobile) */
 select option {
     background-color: #0b1f16 !important;
     color: #ffebba !important;
@@ -222,7 +254,6 @@ select option {
     border: none !important;
 }
 
-/* Some browsers support this hover color inside list */
 select option:checked,
 select option:hover {
     background-color: #15462f !important;
@@ -272,7 +303,7 @@ select option:hover {
     transform: translateY(-1px);
     box-shadow:
         0 16px 34px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(255, 233, 160, 0.85);
+        0 0 22px rgba(255, 233, 160, 0.9);
 }
 
 #talk-button:active {
@@ -344,7 +375,7 @@ textarea {
     min-height: 80px;
     resize: vertical;
     border-radius: 14px;
-    border: 1px solid rgba(205, 177, 102, 0.5);
+    border: 1px solid rgba(205, 177, 102, 0.7);
     padding: 8px 10px;
     background: #020905;
     color: #fff6d9;
@@ -359,7 +390,7 @@ textarea::placeholder {
 
 textarea:focus {
     border-color: #ffe292;
-    box-shadow: 0 0 0 1px rgba(255, 234, 167, 0.85);
+    box-shadow: 0 0 0 1px rgba(255, 234, 167, 0.9);
 }
 
 /* ===== ACTION BUTTONS (mute / clear / copy) ===== */
@@ -380,7 +411,7 @@ textarea:focus {
     padding: 8px 10px;
     border-radius: 999px;
     font-size: 0.78rem;
-    border: 1px solid rgba(204, 177, 106, 0.65);
+    border: 1px solid rgba(204, 177, 106, 0.85);
     background: radial-gradient(circle at top, #143121 0, #050c07 75%);
     color: #f8f0d6;
     cursor: pointer;
@@ -396,7 +427,7 @@ textarea:focus {
 .icon-button:hover {
     background: radial-gradient(circle at top, #19412a 0, #050c07 75%);
     border-color: #ffe7a5;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
     transform: translateY(-0.5px);
 }
 
@@ -414,31 +445,28 @@ textarea:focus {
     color: #e1d0a6;
 }
 
-/* ===== FOOTER (MATCH TOP HEADER LOOK – “CLOSES” BOTTOM) ===== */
+/* ===== FOOTER (mirrors header, closes bottom visually) ===== */
 
 .app-footer {
-    position: relative;
-    z-index: 1;
     padding: 8px 14px 12px;
     background:
-        radial-gradient(circle at bottom right, rgba(255, 250, 210, 0.2), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(255, 250, 210, 0.25), transparent 60%),
         linear-gradient(180deg, #103624 0%, #04150e 60%, #020805 100%);
-    border-top: 1px solid rgba(196, 165, 95, 0.45);
+    border-top: 1px solid rgba(196, 165, 95, 0.6);
     font-size: 0.72rem;
     color: #e4d4a9;
     text-align: center;
-    box-shadow: 0 -10px 26px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 -10px 26px rgba(0, 0, 0, 0.85);
 }
 
-/* small gold highlight line like top */
 .app-footer::before {
     content: "";
     position: absolute;
-    inset-inline: 16px;
+    inset-inline: 18px;
     top: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.7), transparent);
-    opacity: 0.7;
+    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.85), transparent);
+    opacity: 0.8;
 }
 
 .footer-links {
@@ -470,7 +498,8 @@ textarea:focus {
         box-shadow: none;
     }
 
-    .app-shell::before {
-        display: none;
+    .app-shell::before,
+    .app-shell::after {
+        border-radius: 0;
     }
 }
