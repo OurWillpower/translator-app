@@ -1,6 +1,6 @@
 // Speakly app logic
-// Uses: Web Speech API (for speech-to-text + text-to-speech)
-//       LibreTranslate public instance (for text translation)
+// Speech: Web Speech API (if available in browser)
+// Translation: MyMemory free translation API (no key)
 
 /* -------------------- DOM references -------------------- */
 
@@ -36,7 +36,7 @@ let voices = [];
 
 function showStatus(message, isError = false) {
     statusEl.textContent = message || "";
-    statusEl.style.color = isError ? "#ff6b81" : "#a9b3cf";
+    statusEl.style.color = isError ? "#ff6b81" : "#e1d0a6";
 }
 
 function setLoading(isLoading) {
@@ -49,7 +49,7 @@ function savePreferences() {
         localStorage.setItem("speakly_target_lang", targetSelect.value);
         localStorage.setItem("speakly_voice", voiceSelect.value);
     } catch (e) {
-        // ignore storage errors
+        // ignore
     }
 }
 
@@ -73,29 +73,29 @@ function restorePreferences() {
     }
 }
 
+// map "en-US" -> "en", "hi-IN" -> "hi"
 function mapSourceForTranslate(code) {
     if (!code || code === "auto") return "auto";
-    return code.slice(0, 2); // "en-US" -> "en"
+    const lower = code.toLowerCase();
+    return lower.split("-")[0]; // part before "-"
 }
 
 function speakTranslation(text) {
     if (isMuted || !window.speechSynthesis || !text) return;
 
     const synth = window.speechSynthesis;
-    synth.cancel(); // stop any ongoing speech
+    synth.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
     const targetCode = targetSelect.value || "en";
 
-    // Try to use selected voice
     const selectedVoiceName = voiceSelect.value;
     if (selectedVoiceName && voices.length) {
         const found = voices.find(v => v.name === selectedVoiceName);
         if (found) utter.voice = found;
     }
 
-    // Best-effort language mapping
-    utter.lang = (utter.voice && utter.voice.lang) || (targetCode.length === 2 ? targetCode : "en-US");
+    utter.lang = (utter.voice && utter.voice.lang) || targetCode || "en-US";
 
     synth.speak(utter);
 }
@@ -109,44 +109,42 @@ async function translate(text) {
         return;
     }
 
-    const sourceLang = mapSourceForTranslate(sourceSelect.value);
+    const sourceLang = mapSourceForTranslate(sourceSelect.value); // "en-US" -> "en"
     const targetLang = targetSelect.value || "en";
+
+    // MyMemory expects "auto" or two-letter codes like "en|es"
+    const srcCode = sourceLang === "auto" ? "auto" : sourceLang;
+    const tgtCode = targetLang;
 
     setLoading(true);
     showStatus("Translating...");
 
     try {
-        // Public LibreTranslate instance (no API key)
-        const response = await fetch("https://libretranslate.de/translate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                q: trimmed,
-                source: sourceLang === "auto" ? "auto" : sourceLang,
-                target: targetLang,
-                format: "text"
-            })
-        });
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
+            trimmed
+        )}&langpair=${encodeURIComponent(srcCode)}|${encodeURIComponent(tgtCode)}`;
 
+        const response = await fetch(url);
         const data = await response.json();
 
-        if (!response.ok || !data || (!data.translatedText && !data.error)) {
-            throw new Error("Could not get a translation response.");
+        if (!response.ok || !data || !data.responseData) {
+            throw new Error("Invalid translation response.");
         }
 
-        if (data.error) {
-            throw new Error(data.error);
+        const translated = data.responseData.translatedText || "";
+        if (!translated) {
+            throw new Error("No translated text received.");
         }
 
-        const translated = data.translatedText || "";
         outputTextEl.value = translated;
         showStatus("Translation ready.");
         speakTranslation(translated);
     } catch (err) {
         console.error(err);
-        showStatus("Could not translate. Please check your connection or try another language.", true);
+        showStatus(
+            "Could not translate right now. Please check your internet or try a different language.",
+            true
+        );
     } finally {
         setLoading(false);
     }
@@ -155,9 +153,13 @@ async function translate(text) {
 /* -------------------- Speech recognition -------------------- */
 
 function setupRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        showStatus("Speech recognition is not supported in this browser. You can still type to translate.", true);
+        showStatus(
+            "Speech recognition is not supported in this browser. You can still type to translate.",
+            true
+        );
         talkButton.disabled = false;
         return;
     }
@@ -168,26 +170,29 @@ function setupRecognition() {
 
     recognition.onstart = () => {
         isListening = true;
-        talkButton.textContent = "🎤 Listening...";
         talkButton.style.opacity = "0.85";
+        talkButton.querySelector("span").textContent = "Listening...";
         showStatus("Listening… speak now.");
     };
 
     recognition.onend = () => {
         isListening = false;
-        talkButton.textContent = "🎤 Press to Speak";
         talkButton.style.opacity = "1";
-        if (!loadingIndicator.style.display || loadingIndicator.style.display === "none") {
+        talkButton.querySelector("span").textContent = "Press to Speak";
+        if (loadingIndicator.style.display === "none") {
             showStatus("");
         }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = event => {
         console.error(event);
-        showStatus("Could not access microphone or understand speech. Please try again.", true);
+        showStatus(
+            "Could not access the microphone or understand speech. Please try again.",
+            true
+        );
     };
 
-    recognition.onresult = (event) => {
+    recognition.onresult = event => {
         const transcript = Array.from(event.results)
             .map(r => r[0].transcript)
             .join(" ");
@@ -206,7 +211,6 @@ function populateVoices() {
 
     voices = window.speechSynthesis.getVoices();
 
-    // Clear existing options except first "Default"
     while (voiceSelect.options.length > 1) {
         voiceSelect.remove(1);
     }
@@ -221,7 +225,6 @@ function populateVoices() {
             voiceSelect.appendChild(option);
         });
 
-    // Re-apply saved preference if available
     try {
         const savedVoice = localStorage.getItem("speakly_voice");
         if (savedVoice && [...voiceSelect.options].some(o => o.value === savedVoice)) {
@@ -234,15 +237,16 @@ function populateVoices() {
 
 /* -------------------- Event listeners -------------------- */
 
-// Save preferences on language / voice change
 sourceSelect.addEventListener("change", savePreferences);
 targetSelect.addEventListener("change", savePreferences);
 voiceSelect.addEventListener("change", savePreferences);
 
-// Talk button
 talkButton.addEventListener("click", () => {
     if (!recognition) {
-        showStatus("Speech recognition is not available in this browser.", true);
+        showStatus(
+            "Speech recognition is not available in this browser. You can still type to translate.",
+            true
+        );
         return;
     }
     if (isListening) {
@@ -264,7 +268,6 @@ talkButton.addEventListener("click", () => {
     }
 });
 
-// Mute button
 muteButton.addEventListener("click", () => {
     isMuted = !isMuted;
     if (isMuted) {
@@ -278,14 +281,12 @@ muteButton.addEventListener("click", () => {
     }
 });
 
-// Clear button
 clearButton.addEventListener("click", () => {
     inputTextEl.value = "";
     outputTextEl.value = "";
     showStatus("");
 });
 
-// Copy button
 copyButton.addEventListener("click", async () => {
     const text = outputTextEl.value.trim();
     if (!text) {
@@ -308,7 +309,6 @@ copyButton.addEventListener("click", async () => {
     }
 });
 
-// Auto-translate when typing (with a small delay)
 inputTextEl.addEventListener("input", () => {
     const text = inputTextEl.value;
     if (debounceTimer) {
