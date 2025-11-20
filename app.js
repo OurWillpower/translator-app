@@ -29,6 +29,7 @@ let isListening = false;
 let isMuted     = false;
 let recognition = null;
 let debounceTimer = null;
+let voices = [];   // for TTS selection
 
 /* -------------------- Constants -------------------- */
 
@@ -82,17 +83,58 @@ function getSpeechLangFromTarget(targetCode) {
     return code; // fallback: use as-is
 }
 
+/**
+ * Warm up the available voices so speech works reliably.
+ */
+function warmVoices() {
+    if (!window.speechSynthesis) return;
+    const synth = window.speechSynthesis;
+    const list = synth.getVoices();
+    if (list && list.length) {
+        voices = list;
+    }
+}
+
+/**
+ * Try to pick a voice that matches the desired language, else let browser decide.
+ */
+function chooseVoiceForLang(langCode) {
+    if (!voices || !voices.length) return null;
+    const codeLower = langCode.toLowerCase();
+
+    // exact match
+    let v = voices.find(v => v.lang.toLowerCase() === codeLower);
+    if (v) return v;
+
+    // match language prefix e.g. "en" matches "en-US"
+    const prefix = codeLower.split("-")[0];
+    v = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
+    if (v) return v;
+
+    return null;
+}
+
 function speakTranslation(text) {
     if (isMuted || !window.speechSynthesis || !text) return;
 
     const synth = window.speechSynthesis;
     synth.cancel();
 
+    // ensure voices list loaded at least once
+    if (!voices || !voices.length) {
+        warmVoices();
+    }
+
     const utter = new SpeechSynthesisUtterance(text);
     const targetCode = targetSelect.value || "en";
 
-    // Default voice selection based on target language only
-    utter.lang = getSpeechLangFromTarget(targetCode);
+    const lang = getSpeechLangFromTarget(targetCode);
+    utter.lang = lang;
+
+    const matchedVoice = chooseVoiceForLang(lang);
+    if (matchedVoice) {
+        utter.voice = matchedVoice;
+    }
 
     synth.speak(utter);
 }
@@ -372,6 +414,12 @@ window.addEventListener("online", () => {
 document.addEventListener("DOMContentLoaded", () => {
     setDefaultSourceLanguage();
     setupRecognition();
+
+    // Warm up voices so speech works reliably
+    if (window.speechSynthesis) {
+        warmVoices();
+        window.speechSynthesis.onvoiceschanged = warmVoices;
+    }
 
     if (isOffline()) {
         showStatus(OFFLINE_MESSAGE, true);
