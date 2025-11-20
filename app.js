@@ -1,302 +1,337 @@
-// Wait for the DOM to be ready
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // Check if the browser supports Speech Recognition
+// Speakly app logic
+// Uses: Web Speech API (for speech-to-text + text-to-speech)
+//       LibreTranslate public instance (for text translation)
+
+/* -------------------- DOM references -------------------- */
+
+const sourceSelect = document.getElementById("language-select-source");
+const targetSelect = document.getElementById("language-select-target");
+const voiceSelect  = document.getElementById("voice-select");
+
+const talkButton   = document.getElementById("talk-button");
+const muteButton   = document.getElementById("mute-button");
+const clearButton  = document.getElementById("clear-button");
+const copyButton   = document.getElementById("copy-button");
+
+const inputTextEl  = document.getElementById("input-text");
+const outputTextEl = document.getElementById("output-text");
+
+const loadingIndicator = document.getElementById("loading-indicator");
+const statusEl         = document.getElementById("status");
+
+const iconSpeaker = document.getElementById("icon-speaker");
+const iconMute    = document.getElementById("icon-mute");
+const iconCopy    = document.getElementById("icon-copy");
+const iconCheck   = document.getElementById("icon-check");
+
+/* -------------------- State -------------------- */
+
+let isListening = false;
+let isMuted     = false;
+let recognition = null;
+let debounceTimer = null;
+let voices = [];
+
+/* -------------------- Helpers -------------------- */
+
+function showStatus(message, isError = false) {
+    statusEl.textContent = message || "";
+    statusEl.style.color = isError ? "#ff6b81" : "#a9b3cf";
+}
+
+function setLoading(isLoading) {
+    loadingIndicator.style.display = isLoading ? "flex" : "none";
+}
+
+function savePreferences() {
+    try {
+        localStorage.setItem("speakly_source_lang", sourceSelect.value);
+        localStorage.setItem("speakly_target_lang", targetSelect.value);
+        localStorage.setItem("speakly_voice", voiceSelect.value);
+    } catch (e) {
+        // ignore storage errors
+    }
+}
+
+function restorePreferences() {
+    try {
+        const src = localStorage.getItem("speakly_source_lang");
+        const tgt = localStorage.getItem("speakly_target_lang");
+        const voiceId = localStorage.getItem("speakly_voice");
+
+        if (src && [...sourceSelect.options].some(o => o.value === src)) {
+            sourceSelect.value = src;
+        }
+        if (tgt && [...targetSelect.options].some(o => o.value === tgt)) {
+            targetSelect.value = tgt;
+        }
+        if (voiceId) {
+            voiceSelect.value = voiceId;
+        }
+    } catch (e) {
+        // ignore
+    }
+}
+
+function mapSourceForTranslate(code) {
+    if (!code || code === "auto") return "auto";
+    return code.slice(0, 2); // "en-US" -> "en"
+}
+
+function speakTranslation(text) {
+    if (isMuted || !window.speechSynthesis || !text) return;
+
+    const synth = window.speechSynthesis;
+    synth.cancel(); // stop any ongoing speech
+
+    const utter = new SpeechSynthesisUtterance(text);
+    const targetCode = targetSelect.value || "en";
+
+    // Try to use selected voice
+    const selectedVoiceName = voiceSelect.value;
+    if (selectedVoiceName && voices.length) {
+        const found = voices.find(v => v.name === selectedVoiceName);
+        if (found) utter.voice = found;
+    }
+
+    // Best-effort language mapping
+    utter.lang = (utter.voice && utter.voice.lang) || (targetCode.length === 2 ? targetCode : "en-US");
+
+    synth.speak(utter);
+}
+
+/* -------------------- Translation -------------------- */
+
+async function translate(text) {
+    const trimmed = (text || "").trim();
+    if (!trimmed) {
+        showStatus("Type or speak something to translate.");
+        return;
+    }
+
+    const sourceLang = mapSourceForTranslate(sourceSelect.value);
+    const targetLang = targetSelect.value || "en";
+
+    setLoading(true);
+    showStatus("Translating...");
+
+    try {
+        // Public LibreTranslate instance (no API key)
+        const response = await fetch("https://libretranslate.de/translate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                q: trimmed,
+                source: sourceLang === "auto" ? "auto" : sourceLang,
+                target: targetLang,
+                format: "text"
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data || (!data.translatedText && !data.error)) {
+            throw new Error("Could not get a translation response.");
+        }
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        const translated = data.translatedText || "";
+        outputTextEl.value = translated;
+        showStatus("Translation ready.");
+        speakTranslation(translated);
+    } catch (err) {
+        console.error(err);
+        showStatus("Could not translate. Please check your connection or try another language.", true);
+    } finally {
+        setLoading(false);
+    }
+}
+
+/* -------------------- Speech recognition -------------------- */
+
+function setupRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        alert("Sorry, your browser doesn't support speech recognition. Try Chrome.");
+        showStatus("Speech recognition is not supported in this browser. You can still type to translate.", true);
+        talkButton.disabled = false;
         return;
     }
 
-    // Check if the browser supports Speech Synthesis
-    const synthesis = window.speechSynthesis;
-    if (!synthesis) {
-        alert("Sorry, your browser doesn't support speech synthesis.");
-        return;
-    }
-
-    // Get all the HTML elements we need
-    const talkButton = document.getElementById("talk-button");
-    const langSelectSource = document.getElementById("language-select-source"); // "From"
-    const langSelectTarget = document.getElementById("language-select-target"); // "To"
-    const voiceSelect = document.getElementById("voice-select");
-    const voiceSelectWrapper = document.getElementById("voice-select-wrapper");
-    const inputText = document.getElementById("input-text");
-    const outputText = document.getElementById("output-text");
-    const status = document.getElementById("status");
-    const clearButton = document.getElementById("clear-button");
-    const copyButton = document.getElementById("copy-button");
-    const muteButton = document.getElementById("mute-button");
-    const loadingIndicator = document.getElementById("loading-indicator"); 
-    
-    // Get the icons for mute button control
-    const iconSpeaker = document.getElementById("icon-speaker");
-    const iconMute = document.getElementById("icon-mute");
-    // Get the copy and check icons
-    const iconCopy = document.getElementById("icon-copy");
-    const iconCheck = document.getElementById("icon-check");
-    
-    const recognition = new SpeechRecognition();
-    recognition.imits = false; 
-
-    let voices = []; 
-    let isMuted = false;
-    let isListening = false; 
-
-    // --- NEW FEATURE: AUTO-DEFAULT LANGUAGE SETTINGS FIX ---
-    const userLang = navigator.language || navigator.userLanguage; 
-    const targetOptions = Array.from(langSelectTarget.options);
-    
-    let defaultSourceLangValue = 'en-US'; // Default fallback for source
-    let defaultTargetLangValue = 'en';    // Default fallback for target
-
-    // 1. Set the correct Input language based on locale
-    const matchingSourceOption = Array.from(langSelectSource.options).find(option => option.value === userLang);
-    if (matchingSourceOption) {
-        defaultSourceLangValue = userLang;
-    }
-    
-    // 2. Determine the Output Language (PRIORITIZING HINDI)
-    const sourceBaseLang = defaultSourceLangValue.split('-')[0];
-    
-    // Final check for Indian locales (HI, MR, PA, TA, TE, etc.)
-    if (sourceBaseLang === 'hi' || sourceBaseLang === 'mr' || sourceBaseLang === 'ta' || sourceBaseLang === 'pa' || sourceBaseLang === 'te' || sourceBaseLang === 'gu') {
-         // If user's browser language is an Indian language, default the output to English
-         defaultTargetLangValue = 'en';
-    } else {
-         // For all other languages (like English or Spanish), default the output to Hindi
-         defaultTargetLangValue = 'hi';
-    }
-
-    // 3. Apply the final defaults
-    langSelectSource.value = defaultSourceLangValue;
-    const matchingTargetOption = targetOptions.find(option => option.value === defaultTargetLangValue);
-    if (matchingTargetOption) {
-        langSelectTarget.value = defaultTargetLangValue;
-    }
-    
-    // Set initial recognition language
-    recognition.lang = langSelectSource.value; 
-    // --- END AUTO-DEFAULT SETTINGS FIX ---
-
-
-    // --- 1. Populate Voice List ---
-    function populateVoiceList() {
-        const selectedLangCode = langSelectTarget.value;
-        const selectedVoiceName = voiceSelect.options[0] ? voiceSelect.options[0].getAttribute("data-name") : null;
-
-        voiceSelect.innerHTML = '<option value="">Default</option>';
-        
-        let langVoices = [];
-        for (const voice of voices) {
-            if (voice.lang.startsWith(selectedLangCode)) {
-                langVoices.push(voice);
-            }
-        }
-
-        if (langVoices.length > 0) {
-            voiceSelectWrapper.style.display = "block";
-            for (const voice of langVoices) {
-                const option = document.createElement("option");
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute("data-lang", voice.lang);
-                option.setAttribute("data-name", voice.name);
-                if (voice.name === selectedVoiceName) {
-                    option.selected = true;
-                }
-                voiceSelect.appendChild(option);
-            }
-        } else {
-            voiceSelectWrapper.style.display = "none";
-        }
-    }
-
-    // --- 2. Load Voices ---
-    function loadAndDisplayVoices() {
-        voices = synthesis.getVoices();
-        if (voices.length > 0) {
-            populateVoiceList();
-        } else {
-            setTimeout(loadAndDisplayVoices, 100);
-        }
-    }
-
-    // --- 3. Event Listeners ---
-    loadAndDisplayVoices(); 
-    synthesis.onvoiceschanged = loadAndDisplayVoices; 
-    
-    langSelectTarget.addEventListener("change", populateVoiceList);
-    
-    langSelectSource.addEventListener("change", () => {
-        recognition.lang = langSelectSource.value;
-    });
-    
-    // Mute Button Logic
-    muteButton.addEventListener("click", () => {
-        isMuted = !isMuted;
-        if (isMuted) {
-            muteButton.classList.add("muted");
-            iconSpeaker.style.display = "none";
-            iconMute.style.display = "block";
-            synthesis.cancel();
-        } else {
-            muteButton.classList.remove("muted");
-            iconSpeaker.style.display = "block";
-            iconMute.style.display = "none";
-        }
-    });
-
-    // --- 4. Text-to-Speech Function ---
-    const playTranslation = (textToSpeak) => {
-        if (isMuted) return;
-        if (textToSpeak && synthesis.speaking) synthesis.cancel();
-
-        if (textToSpeak) {
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            
-            const selectedVoiceName = voiceSelect.options[0] ? voiceSelect.options[0].getAttribute("data-name") : null;
-            let voice = voices.find(v => v.name === selectedVoiceName);
-            
-            if (!voice) {
-                voice = voices.find(v => v.lang.startsWith(langSelectTarget.value));
-            }
-            
-            if (voice) {
-                utterance.voice = voice;
-                utterance.lang = voice.lang;
-            } else {
-                status.textContent = "This voice output requires Speakly Pro."; 
-                return; 
-            }
-            
-            utterance.onerror = (event) => {
-                status.textContent = "Speech error.";
-                console.error("SpeechSynthesisUtterance.onerror", event);
-            };
-            synthesis.speak(utterance);
-        }
-    };
-
-    // --- 5. Speech-to-Text Logic ---
-    
-    recognition.onresult = (event) => {
-        const spokenText = event.results[0][0].transcript;
-        inputText.value = spokenText;
-        doTranslate(spokenText, true, langSelectSource.value.split('-')[0]); 
-    };
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
     recognition.onstart = () => {
-        status.textContent = "Listening...";
-        talkButton.classList.add("recording"); 
-        talkButton.textContent = "🛑 Press again to Stop"; 
+        isListening = true;
+        talkButton.textContent = "🎤 Listening...";
+        talkButton.style.opacity = "0.85";
+        showStatus("Listening… speak now.");
     };
 
     recognition.onend = () => {
-        status.textContent = "";
-        talkButton.classList.remove("recording"); 
-        talkButton.textContent = "🎤 Press to Speak"; 
-        isListening = false; 
+        isListening = false;
+        talkButton.textContent = "🎤 Press to Speak";
+        talkButton.style.opacity = "1";
+        if (!loadingIndicator.style.display || loadingIndicator.style.display === "none") {
+            showStatus("");
+        }
     };
 
     recognition.onerror = (event) => {
-        status.textContent = `Error: ${event.error}. Try again.`;
-        isListening = false;
+        console.error(event);
+        showStatus("Could not access microphone or understand speech. Please try again.", true);
     };
 
-    // "tap-on/tap-off" logic
-    talkButton.addEventListener("click", () => {
-        if (!isListening) {
-            try {
-                recognition.lang = langSelectSource.value;
-                isListening = true;
-                recognition.start();
-            } catch (e) {
-                console.error("Recognition already started.", e);
-                isListening = false;
-            }
+    recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+            .map(r => r[0].transcript)
+            .join(" ");
+
+        inputTextEl.value = transcript;
+        translate(transcript);
+    };
+
+    talkButton.disabled = false;
+}
+
+/* -------------------- Voices -------------------- */
+
+function populateVoices() {
+    if (!window.speechSynthesis) return;
+
+    voices = window.speechSynthesis.getVoices();
+
+    // Clear existing options except first "Default"
+    while (voiceSelect.options.length > 1) {
+        voiceSelect.remove(1);
+    }
+
+    voices
+        .slice()
+        .sort((a, b) => a.lang.localeCompare(b.lang))
+        .forEach(voice => {
+            const option = document.createElement("option");
+            option.value = voice.name;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            voiceSelect.appendChild(option);
+        });
+
+    // Re-apply saved preference if available
+    try {
+        const savedVoice = localStorage.getItem("speakly_voice");
+        if (savedVoice && [...voiceSelect.options].some(o => o.value === savedVoice)) {
+            voiceSelect.value = savedVoice;
+        }
+    } catch (e) {
+        // ignore
+    }
+}
+
+/* -------------------- Event listeners -------------------- */
+
+// Save preferences on language / voice change
+sourceSelect.addEventListener("change", savePreferences);
+targetSelect.addEventListener("change", savePreferences);
+voiceSelect.addEventListener("change", savePreferences);
+
+// Talk button
+talkButton.addEventListener("click", () => {
+    if (!recognition) {
+        showStatus("Speech recognition is not available in this browser.", true);
+        return;
+    }
+    if (isListening) {
+        recognition.stop();
+        return;
+    }
+
+    try {
+        const src = sourceSelect.value;
+        if (src && src !== "auto") {
+            recognition.lang = src;
         } else {
-            recognition.stop();
+            recognition.lang = "en-US";
         }
-    });
+        recognition.start();
+    } catch (err) {
+        console.error(err);
+        showStatus("Unable to start listening. Please check microphone permissions.", true);
+    }
+});
 
+// Mute button
+muteButton.addEventListener("click", () => {
+    isMuted = !isMuted;
+    if (isMuted) {
+        iconSpeaker.style.display = "none";
+        iconMute.style.display = "inline";
+        showStatus("Sound muted.");
+    } else {
+        iconSpeaker.style.display = "inline";
+        iconMute.style.display = "none";
+        showStatus("Sound on.");
+    }
+});
 
-    // --- 6. Translation Logic ---
-    const doTranslate = async (textToTranslate, autoPlay = false, sourceLang) => {
-        if (!textToTranslate) {
-            outputText.value = "";
-            return;
+// Clear button
+clearButton.addEventListener("click", () => {
+    inputTextEl.value = "";
+    outputTextEl.value = "";
+    showStatus("");
+});
+
+// Copy button
+copyButton.addEventListener("click", async () => {
+    const text = outputTextEl.value.trim();
+    if (!text) {
+        showStatus("Nothing to copy yet.");
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(text);
+        iconCopy.style.display = "none";
+        iconCheck.style.display = "inline";
+        showStatus("Translation copied.");
+        setTimeout(() => {
+            iconCopy.style.display = "inline";
+            iconCheck.style.display = "none";
+        }, 1200);
+    } catch (err) {
+        console.error(err);
+        showStatus("Could not copy to clipboard.", true);
+    }
+});
+
+// Auto-translate when typing (with a small delay)
+inputTextEl.addEventListener("input", () => {
+    const text = inputTextEl.value;
+    if (debounceTimer) {
+        clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(() => {
+        if (text.trim()) {
+            translate(text);
+        } else {
+            outputTextEl.value = "";
+            showStatus("");
         }
-        
-        loadingIndicator.style.display = 'flex'; // Show the spinner
+    }, 700);
+});
 
-        status.textContent = "Translating...";
-        const targetLang = langSelectTarget.value;
-        
-        try {
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(textToTranslate)}`;
-            const res = await fetch(url);
-            if (!res.ok) { throw new Error(`API error: ${res.status}`); }
-            const data = await res.json();
-            const translatedText = data[0].map(segment => segment[0]).join('');
-            outputText.value = translatedText;
-            status.textContent = "";
-            
-            populateVoiceList();
+/* -------------------- Init -------------------- */
 
-            if (autoPlay) {
-                playTranslation(translatedText);
-            }
+document.addEventListener("DOMContentLoaded", () => {
+    restorePreferences();
+    setupRecognition();
+    populateVoices();
 
-        } catch (error) {
-            status.textContent = "Translation failed. Check internet.";
-            console.error(error);
-        } finally {
-            loadingIndicator.style.display = 'none'; // Hide the spinner
-        }
-    };
-    
-    // Translate on type
-    inputText.addEventListener("blur", () => {
-        const sourceLang = langSelectSource.value.split('-')[0];
-        doTranslate(inputText.value, true, sourceLang); // auto-play
-    });
-
-    // NEW LOGIC: Trigger translation on Enter key press
-    inputText.addEventListener("keyup", (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Prevents a new line in the text area
-            const sourceLang = langSelectSource.value.split('-')[0];
-            doTranslate(inputText.value, true, sourceLang); // Auto-play translation
-        }
-    });
-
-    // --- 7. Helper Button Logic (COPY CONFIRMATION) ---
-    clearButton.addEventListener("click", () => {
-        inputText.value = "";
-        outputText.value = "";
-        status.textContent = "";
-    });
-    copyButton.addEventListener("click", () => {
-        const textToCopy = outputText.value;
-        if (textToCopy) {
-            navigator.clipboard.writeText(textToCopy)
-                .then(() => {
-                    // Show confirmation visual
-                    copyButton.classList.add('copied');
-                    iconCopy.style.display = 'none';
-                    iconCheck.style.display = 'block';
-
-                    // Revert after 1.5 seconds
-                    setTimeout(() => {
-                        copyButton.classList.remove('copied');
-                        iconCopy.style.display = 'block';
-                        iconCheck.style.display = 'none';
-                    }, 1500);
-                })
-                .catch(err => {
-                    status.textContent = "Failed to copy.";
-                    console.error("Failed to copy text: ", err);
-                });
-        }
-    });
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
 });
