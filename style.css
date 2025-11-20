@@ -1,4 +1,4 @@
-/* ------------ Reset & base ------------ */
+/* ===== RESET & BASE ===== */
 
 *,
 *::before,
@@ -14,51 +14,70 @@ html, body {
 
 body {
     font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: radial-gradient(circle at top, #262a3e 0, #05060a 55%, #020308 100%);
-    color: #f5f5f5;
+    /* Deep premium green background */
+    background:
+        radial-gradient(circle at top left, #145235 0, transparent 55%),
+        radial-gradient(circle at bottom right, #0c3b28 0, #020806 65%);
+    color: #fdf8e9;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     padding: 16px;
 }
 
-/* ------------ Phone-style shell ------------ */
+/* ===== APP CONTAINER (mobile-app style card) ===== */
 
 .app-shell {
     width: 100%;
-    max-width: 430px;               /* phone width */
-    height: 100%;
-    max-height: 800px;              /* typical tall phone */
-    border-radius: 32px;
-    padding: 0;
-    background: linear-gradient(165deg, #101325 0%, #050713 45%, #05040d 100%);
+    max-width: 420px;      /* feels like a phone screen */
+    margin: auto;
+    border-radius: 26px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #04150e 0%, #03100b 50%, #010806 100%);
     box-shadow:
-        0 22px 60px rgba(0, 0, 0, 0.85),
-        0 0 0 1px rgba(255, 255, 255, 0.03);
+        0 22px 50px rgba(0, 0, 0, 0.85),
+        0 0 0 1px rgba(255, 223, 132, 0.06);
     display: flex;
     flex-direction: column;
-    overflow: hidden;               /* rounded phone corners */
 }
 
-/* small top "notch" feel */
+/* Gold border glow around the “phone” */
 .app-shell::before {
     content: "";
-    display: block;
-    width: 90px;
-    height: 5px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-    margin: 8px auto 2px;
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 223, 132, 0.5), rgba(94, 204, 140, 0.2));
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
-/* ------------ Header ------------ */
+/* ===== HEADER ===== */
 
 .app-header {
-    padding: 10px 18px 14px;
-    border-radius: 0 0 22px 22px;
-    background: linear-gradient(130deg, #0c3b7b, #2557d1, #4b8dff);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+    position: relative;
+    padding: 14px 18px 12px;
+    background:
+        radial-gradient(circle at top left, rgba(255, 250, 210, 0.25), transparent 60%),
+        linear-gradient(135deg, #245938, #0d3c2b 55%, #103624 100%);
+    border-bottom: 1px solid rgba(248, 217, 120, 0.25);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* subtle golden shine line */
+.app-header::after {
+    content: "";
+    position: absolute;
+    inset-inline: 16px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.8), transparent);
+    opacity: 0.7;
 }
 
 .app-title {
@@ -68,8 +87,8 @@ body {
 }
 
 #app-logo-svg {
-    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.4));
     flex-shrink: 0;
+    filter: drop-shadow(0 0 6px rgba(255, 223, 132, 0.55));
 }
 
 .app-title-text {
@@ -80,46 +99,49 @@ body {
 .app-name {
     font-size: 1.1rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
+    color: #ffe9a0;
 }
 
 .app-tagline {
     font-size: 0.78rem;
+    color: #f8f1da;
     opacity: 0.9;
 }
 
-/* ------------ Main area (scrollable) ------------ */
+/* ===== MAIN AREA ===== */
 
 .translator {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 10px 14px 8px;
     gap: 10px;
+    padding: 10px 14px 12px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: rgba(127, 164, 255, 0.7) transparent;
+    scrollbar-color: rgba(203, 175, 93, 0.8) transparent;
 }
 
 .translator::-webkit-scrollbar {
     width: 5px;
 }
 .translator::-webkit-scrollbar-thumb {
-    background: rgba(127, 164, 255, 0.7);
+    background: rgba(203, 175, 93, 0.8);
     border-radius: 999px;
 }
 
-/* Cards inside app */
+/* ===== CARDS ===== */
 
 .card {
-    background: rgba(14, 18, 35, 0.92);
+    background: radial-gradient(circle at top, #091f15 0, #04110b 65%);
     border-radius: 18px;
     padding: 12px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(188, 158, 82, 0.25);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
 }
 
-/* ------------ Language selection ------------ */
+/* ==== LANGUAGE SELECTION ==== */
 
 .card-languages .controls {
     display: flex;
@@ -128,38 +150,37 @@ body {
 }
 
 .select-wrapper {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
-    min-width: 0;
 }
 
 .select-wrapper label {
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #a9b3cf;
+    color: #e6d4a3;
 }
 
 select {
-    background: radial-gradient(circle at top, #12172a 0, #070916 65%);
+    background:
+        radial-gradient(circle at top, #173826 0, #07140d 70%);
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    padding: 8px 30px 8px 12px;
-    color: #f5f5f5;
+    border: 1px solid rgba(199, 174, 94, 0.5);
+    padding: 8px 30px 8px 11px;
+    color: #fdf5dd;
     font-size: 0.86rem;
     outline: none;
     appearance: none;
     -webkit-appearance: none;
     position: relative;
-}
 
-/* little dropdown arrow effect */
-select {
+    /* custom arrow */
     background-image:
-        linear-gradient(45deg, transparent 50%, #a1b3ff 50%),
-        linear-gradient(135deg, #a1b3ff 50%, transparent 50%);
+        linear-gradient(45deg, transparent 50%, #f3dd9a 50%),
+        linear-gradient(135deg, #f3dd9a 50%, transparent 50%);
     background-position:
         calc(100% - 14px) 10px,
         calc(100% - 9px) 10px;
@@ -168,17 +189,16 @@ select {
 }
 
 select:focus {
-    border-color: #4b8dff;
-    box-shadow: 0 0 0 1px rgba(91, 151, 255, 0.7);
+    border-color: #ffe292;
+    box-shadow: 0 0 0 1px rgba(255, 232, 158, 0.8);
 }
 
-/* Voice select below */
-
+/* voice select spacing */
 #voice-select-wrapper {
     margin-top: 6px;
 }
 
-/* ------------ Mic + helper ------------ */
+/* ===== MIC + HELPER ===== */
 
 .card-actions {
     display: flex;
@@ -188,36 +208,43 @@ select:focus {
     text-align: center;
 }
 
+/* gold + green pill button */
 #talk-button {
     border: none;
     outline: none;
-    padding: 12px 28px;
+    padding: 11px 26px;
     border-radius: 999px;
     font-size: 0.98rem;
     font-weight: 600;
     cursor: pointer;
-    background: radial-gradient(circle at top left, #2fd6ff, #0b84ff, #0051ff);
-    color: white;
-    box-shadow: 0 14px 34px rgba(0, 118, 255, 0.8);
+    background: linear-gradient(130deg, #ffe8a1, #f4c860, #e3a936);
+    color: #3c2a08;
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.7),
+        0 0 18px rgba(255, 231, 150, 0.65);
     transition: transform 0.14s ease-out, box-shadow 0.14s ease-out, opacity 0.1s;
 }
 
 #talk-button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 18px 42px rgba(0, 118, 255, 0.85);
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(255, 233, 160, 0.85);
 }
 
 #talk-button:active {
     transform: translateY(1px) scale(0.97);
-    box-shadow: 0 10px 26px rgba(0, 118, 255, 0.7);
+    box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.7),
+        0 0 12px rgba(255, 225, 145, 0.6);
 }
 
 .helper-text {
     font-size: 0.76rem;
-    color: #b3bfd8;
+    color: #f4ebcf;
 }
 
-/* Loading indicator */
+/* loading indicator */
 
 #loading-indicator {
     display: none;
@@ -226,15 +253,15 @@ select:focus {
     gap: 6px;
     margin-top: 4px;
     font-size: 0.78rem;
-    color: #d0e1ff;
+    color: #f8f1da;
 }
 
 .spinner {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.25);
-    border-top-color: #4facfe;
+    border: 2px solid rgba(255, 246, 210, 0.35);
+    border-top-color: #ffe292;
     animation: spin 0.7s linear infinite;
 }
 
@@ -244,7 +271,7 @@ select:focus {
     }
 }
 
-/* ------------ Text areas ------------ */
+/* ===== TEXT AREAS ===== */
 
 .card-text {
     display: flex;
@@ -268,7 +295,7 @@ select:focus {
     font-size: 0.74rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #a9b3cf;
+    color: #e9d7a6;
 }
 
 textarea {
@@ -276,25 +303,25 @@ textarea {
     min-height: 80px;
     resize: vertical;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(205, 177, 102, 0.5);
     padding: 8px 10px;
-    background: #050711;
-    color: #f5f5f5;
+    background: #020905;
+    color: #fff6d9;
     font-size: 0.9rem;
     line-height: 1.4;
     outline: none;
 }
 
 textarea::placeholder {
-    color: #6f7992;
+    color: #b29c6e;
 }
 
 textarea:focus {
-    border-color: #4b8dff;
-    box-shadow: 0 0 0 1px rgba(91, 151, 255, 0.65);
+    border-color: #ffe292;
+    box-shadow: 0 0 0 1px rgba(255, 234, 167, 0.85);
 }
 
-/* ------------ Action buttons row ------------ */
+/* ===== ACTION BUTTONS (mute / clear / copy) ===== */
 
 .button-row {
     display: flex;
@@ -312,9 +339,9 @@ textarea:focus {
     padding: 8px 10px;
     border-radius: 999px;
     font-size: 0.78rem;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    background: radial-gradient(circle at top, #13182a 0, #070916 80%);
-    color: #e3e7f8;
+    border: 1px solid rgba(204, 177, 106, 0.65);
+    background: radial-gradient(circle at top, #143121 0, #050c07 75%);
+    color: #f8f0d6;
     cursor: pointer;
     outline: none;
     transition: background 0.12s ease-out, transform 0.08s ease-out, border-color 0.12s, box-shadow 0.12s;
@@ -326,9 +353,9 @@ textarea:focus {
 }
 
 .icon-button:hover {
-    background: #181e33;
-    border-color: rgba(91, 151, 255, 0.8);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    background: radial-gradient(circle at top, #19412a 0, #050c07 75%);
+    border-color: #ffe7a5;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
     transform: translateY(-0.5px);
 }
 
@@ -337,23 +364,23 @@ textarea:focus {
     box-shadow: none;
 }
 
-/* Status label */
+/* Status line */
 
 .status {
     margin-top: 4px;
     font-size: 0.76rem;
     min-height: 1em;
-    color: #a9b3cf;
+    color: #e1d0a6;
 }
 
-/* ------------ Footer inside phone ------------ */
+/* ===== FOOTER ===== */
 
 .app-footer {
-    padding: 6px 16px 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(6, 8, 18, 0.96);
+    padding: 6px 14px 10px;
+    border-top: 1px solid rgba(196, 165, 95, 0.45);
+    background: linear-gradient(180deg, #07170f 0%, #030804 100%);
     font-size: 0.72rem;
-    color: #a1abc5;
+    color: #e4d4a9;
     text-align: center;
 }
 
@@ -365,7 +392,7 @@ textarea:focus {
 }
 
 .footer-links a {
-    color: #7fb3ff;
+    color: #ffe7a3;
     text-decoration: none;
     font-size: 0.72rem;
 }
@@ -374,17 +401,14 @@ textarea:focus {
     text-decoration: underline;
 }
 
-/* ------------ Responsive tweaks ------------ */
+/* ===== RESPONSIVE ===== */
 
 @media (max-width: 480px) {
     body {
         padding: 6px;
-        align-items: stretch;
     }
 
     .app-shell {
-        height: 100%;
-        max-height: none;
         border-radius: 0;
         box-shadow: none;
     }
