@@ -43,10 +43,14 @@ function setLoading(isLoading) {
     loadingIndicator.style.display = isLoading ? "flex" : "none";
 }
 
-// map "en-US" -> "en", "hi-IN" -> "hi"
+function isOffline() {
+    return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+// "en-US" -> "en", "hi-IN" -> "hi"
 function mapSourceForTranslate(code) {
     if (!code || code === "auto") return "auto";
-    const lower = code.toLowerCase();
+    const lower = String(code).toLowerCase();
     return lower.split("-")[0];
 }
 
@@ -70,67 +74,21 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
-/**
- * Set default source language based on browser location / language.
- * - If user appears to be from India: default Hindi (hi-IN), or Marathi if browser language is Marathi.
- * - Else fallback: hi / mr / en based on browser language.
- */
-function setDefaultSourceLanguage() {
-    try {
-        const navLangRaw = (navigator.language || "").toLowerCase(); // e.g. "en-in", "hi-in"
-        const tz = Intl.DateTimeFormat
-            ? (Intl.DateTimeFormat().resolvedOptions().timeZone || "")
-            : "";
-
-        let defaultCode = null;
-
-        const isIndia =
-            tz === "Asia/Kolkata" ||
-            navLangRaw.endsWith("-in");
-
-        if (isIndia) {
-            if (navLangRaw.startsWith("mr")) {
-                // user is likely Marathi-preferring in India
-                defaultCode = "mr-IN";
-            } else if (navLangRaw.startsWith("hi")) {
-                defaultCode = "hi-IN";
-            } else {
-                // general India case: default to Hindi
-                defaultCode = "hi-IN";
-            }
-        }
-
-        // If nothing decided yet, try based just on language
-        if (!defaultCode && navLangRaw) {
-            if (navLangRaw.startsWith("hi")) {
-                defaultCode = "hi-IN";
-            } else if (navLangRaw.startsWith("mr")) {
-                defaultCode = "mr-IN";
-            } else if (navLangRaw.startsWith("en")) {
-                defaultCode = "en-US";
-            }
-        }
-
-        if (defaultCode) {
-            const options = Array.from(sourceSelect.options);
-            const exists = options.some(o => o.value === defaultCode);
-            if (exists) {
-                sourceSelect.value = defaultCode;
-                showStatus(`Default input language set to ${sourceSelect.options[sourceSelect.selectedIndex].text}.`);
-            }
-        }
-    } catch (e) {
-        // If anything fails, just keep the default set in HTML
-        console.error("Could not set default source language:", e);
-    }
-}
-
 /* -------------------- Translation (MyMemory) -------------------- */
 
 async function translate(text) {
     const trimmed = (text || "").trim();
     if (!trimmed) {
         showStatus("Type or speak something to translate.");
+        return;
+    }
+
+    // OFFLINE HANDLING (your requested text)
+    if (isOffline()) {
+        showStatus(
+            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
+            true
+        );
         return;
     }
 
@@ -164,9 +122,9 @@ async function translate(text) {
         showStatus("Translation ready.");
         speakTranslation(translated);
     } catch (err) {
-        console.error(err);
+        console.error("Translation error:", err);
         showStatus(
-            "Could not translate right now. Please check your internet or try a different language pair.",
+            "Unable to translate right now. Please check your internet or try again in a while.",
             true
         );
     } finally {
@@ -195,21 +153,23 @@ function setupRecognition() {
     recognition.onstart = () => {
         isListening = true;
         talkButton.style.opacity = "0.85";
-        talkButton.querySelector("span").textContent = "Listening...";
+        const span = talkButton.querySelector("span");
+        if (span) span.textContent = "Listening...";
         showStatus("Listening… speak now.");
     };
 
     recognition.onend = () => {
         isListening = false;
         talkButton.style.opacity = "1";
-        talkButton.querySelector("span").textContent = "Press to Speak";
+        const span = talkButton.querySelector("span");
+        if (span) span.textContent = "Press to Speak";
         if (loadingIndicator.style.display === "none") {
             showStatus("");
         }
     };
 
     recognition.onerror = event => {
-        console.error(event);
+        console.error("Speech recognition error:", event);
         showStatus(
             "Could not access the microphone or understand speech. Please try again.",
             true
@@ -252,6 +212,7 @@ function populateVoices() {
 
 /* -------------------- Event listeners -------------------- */
 
+// Speech button
 talkButton.addEventListener("click", () => {
     if (!recognition) {
         showStatus(
@@ -265,16 +226,25 @@ talkButton.addEventListener("click", () => {
         return;
     }
 
+    if (isOffline()) {
+        showStatus(
+            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
+            true
+        );
+        return;
+    }
+
     try {
         const src = sourceSelect.value;
         recognition.lang = src && src !== "auto" ? src : "en-US";
         recognition.start();
     } catch (err) {
-        console.error(err);
+        console.error("Start listening error:", err);
         showStatus("Unable to start listening. Please check microphone permissions.", true);
     }
 });
 
+// Mute
 muteButton.addEventListener("click", () => {
     isMuted = !isMuted;
     if (isMuted) {
@@ -288,12 +258,14 @@ muteButton.addEventListener("click", () => {
     }
 });
 
+// Clear
 clearButton.addEventListener("click", () => {
     inputTextEl.value = "";
     outputTextEl.value = "";
     showStatus("");
 });
 
+// Copy
 copyButton.addEventListener("click", async () => {
     const text = outputTextEl.value.trim();
     if (!text) {
@@ -311,7 +283,7 @@ copyButton.addEventListener("click", async () => {
             iconCheck.style.display = "none";
         }, 1200);
     } catch (err) {
-        console.error(err);
+        console.error("Copy error:", err);
         showStatus("Could not copy to clipboard.", true);
     }
 });
@@ -332,16 +304,32 @@ inputTextEl.addEventListener("input", () => {
     }, 700);
 });
 
+// Live online/offline status updates
+window.addEventListener("offline", () => {
+    showStatus(
+        "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
+        true
+    );
+});
+
+window.addEventListener("online", () => {
+    showStatus("You are back online. You can translate again.");
+});
+
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Set default source language based on location / language
-    setDefaultSourceLanguage();
-
     setupRecognition();
     populateVoices();
 
     if (window.speechSynthesis) {
         window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    if (isOffline()) {
+        showStatus(
+            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
+            true
+        );
     }
 });
