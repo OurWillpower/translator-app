@@ -1,265 +1,431 @@
-/* ----------------------------------------------------
-   GLOBAL STYLE — PREMIUM ORNATE GOLD EDITION (STYLE A)
-   Full file — overwrite existing style.css completely
------------------------------------------------------*/
-
-* {
+/* GLOBAL RESET */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: "Roboto", sans-serif;
 }
 
-/* ----------------------------------------------------
-   APP SHELL + GOLDEN ORNATE BORDER
------------------------------------------------------*/
+html, body {
+    height: 100%;
+}
+
 body {
-    background: #0b1f16;
-    color: #ffe9b8;
-    min-height: 100vh;
+    font-family: "Roboto", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background:
+        radial-gradient(circle at top left, #184f37 0, transparent 55%),
+        radial-gradient(circle at bottom right, #052216 0, #020806 70%);
+    color: #fdf8e9;
     display: flex;
     justify-content: center;
-    padding: 18px;
+    align-items: stretch;
+    padding: 16px;
 }
 
+/* APP SHELL WITH ORNATE GOLD FRAME */
 .app-shell {
+    position: relative;
     width: 100%;
     max-width: 420px;
-    background: linear-gradient(150deg, #113b29 0%, #062015 55%, #03150d 100%);
-    border-radius: 22px;
-    padding: 0;
+    min-height: 640px;
+    margin: auto;
+    border-radius: 26px;
     overflow: hidden;
-    position: relative;
+    background: radial-gradient(circle at top, #07190f 0%, #020806 60%, #000000 100%);
+    box-shadow:
+        0 28px 60px rgba(0, 0, 0, 0.95),
+        0 0 60px rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
 }
 
-/* ORNATE GOLD BORDER */
+/* Outer glowing gold frame (continuous border) */
 .app-shell::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 22px;
+    border-radius: 26px;
     padding: 3px;
     background:
         conic-gradient(
             from 0deg,
-            #ffe9b1,
-            #caa968,
-            #fff3c7,
-            #b08945,
-            #ffe9b1
+            #ffefc5,
+            #f5c85c,
+            #d4992b,
+            #ffefc5,
+            #f5c85c,
+            #d4992b,
+            #ffefc5
         );
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
+    mask-composite: exclude;
     pointer-events: none;
+    box-shadow:
+        0 0 24px rgba(255, 236, 180, 0.7),
+        0 0 40px rgba(222, 176, 75, 0.7);
 }
 
+/* Decorative corner glows */
 .app-shell::after {
     content: "";
     position: absolute;
-    inset: -6px;
+    inset: 0;
     border-radius: 26px;
-    background: radial-gradient(circle, rgba(255,230,158,0.18) 0%, transparent 70%);
-    filter: blur(14px);
-    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 14px 14px, rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at calc(100% - 14px) 14px, rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at 14px calc(100% - 14px), rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), rgba(255, 235, 166, 0.7), transparent 55%),
+        radial-gradient(circle at 50% 0%, rgba(255, 237, 185, 0.3), transparent 70%),
+        radial-gradient(circle at 50% 100%, rgba(255, 218, 140, 0.25), transparent 70%);
+    opacity: 0.95;
 }
 
-/* ----------------------------------------------------
-   HEADER
------------------------------------------------------*/
+/* INNER CONTENT LAYERS */
+.app-shell > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* HEADER */
 .app-header {
-    padding: 22px 20px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 16px 18px 12px;
     background:
-        linear-gradient(180deg, #174f34 0%, #0d2c1f 60%, #082116 100%);
-    border-bottom: 1px solid rgba(255, 223, 165, 0.55);
+        radial-gradient(circle at top left, rgba(255, 250, 210, 0.35), transparent 60%),
+        linear-gradient(135deg, #215636 0%, #0b3626 50%, #0d2b1f 100%);
+    border-bottom: 1px solid rgba(248, 217, 120, 0.4);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.7);
+}
+
+.app-header::after {
+    content: "";
+    position: absolute;
+    inset-inline: 24px;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.9), transparent);
+    opacity: 0.8;
 }
 
 .app-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+}
+
+#app-logo-svg {
+    flex-shrink: 0;
+    filter:
+        drop-shadow(0 0 6px rgba(255, 223, 132, 0.8))
+        drop-shadow(0 0 12px rgba(110, 78, 16, 0.9));
+}
+
+.app-title-text {
+    display: flex;
+    flex-direction: column;
 }
 
 .app-name {
-    font-size: 1.48rem;
-    font-weight: 700;
-    color: #ffe7a8;
-    text-shadow: 0 0 5px rgba(255,214,140,0.6), 0 0 12px rgba(0,0,0,0.9);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #ffe9a0;
 }
 
 .app-tagline {
-    font-size: 0.74rem;
-    color: #d8c892;
-}
-
-/* ----------------------------------------------------
-   CARD LAYOUT
------------------------------------------------------*/
-.card {
-    margin: 16px;
-    background: rgba(11, 31, 22, 0.7);
-    border: 1px solid rgba(190, 150, 80, 0.45);
-    border-radius: 16px;
-    padding: 14px 18px;
-    backdrop-filter: blur(8px);
-}
-
-.card-actions {
-    text-align: center;
-}
-
-/* ----------------------------------------------------
-   SELECT BOXES — PREMIUM GOLD STYLE
------------------------------------------------------*/
-.select-wrapper label {
     font-size: 0.8rem;
-    color: #ead7a3;
+    color: #f8f1da;
+    opacity: 0.9;
+}
+
+/* MAIN */
+.app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 14px 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(203, 175, 93, 0.8) transparent;
+}
+
+.app-main::-webkit-scrollbar {
+    width: 5px;
+}
+.app-main::-webkit-scrollbar-thumb {
+    background: rgba(203, 175, 93, 0.8);
+    border-radius: 999px;
+}
+
+/* CARDS */
+.card {
+    background: radial-gradient(circle at top, #081f16 0, #03100b 65%);
+    border-radius: 18px;
+    padding: 12px 13px;
+    border: 1px solid rgba(188, 158, 82, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* LANGUAGE SELECTION */
+.card-languages .controls {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.select-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.select-wrapper label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #e6d4a3;
 }
 
 select {
-    width: 100%;
-    margin-top: 4px;
     background:
-        radial-gradient(circle at top, #143424 0%, #0a1f14 75%);
+        radial-gradient(circle at top, #173826 0, #07140d 70%);
     border-radius: 999px;
-    border: 1px solid rgba(199, 174, 94, 0.6);
-    padding: 9px 16px;
-    color: #ffeeca;
-    font-size: 0.9rem;
+    border: 1px solid rgba(199, 174, 94, 0.9);
+    padding: 8px 30px 8px 11px;
+    color: #fdf5dd;
+    font-size: 0.86rem;
     outline: none;
     appearance: none;
-}
-
-/* Dropdown options visible in gold */
-select option {
-    background-color: #0d2418 !important;
-    color: #ffe9b3 !important;
-    padding: 8px !important;
-}
-
-/* ----------------------------------------------------
-   MICROPHONE BUTTON
------------------------------------------------------*/
-#talk-button {
-    width: 100%;
-    background:
-        linear-gradient(180deg, #ffe8ad 0%, #d7b56c 50%, #b8924e 100%);
-    border: none;
-    border-radius: 40px;
-    padding: 14px 0;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #3d2a00;
+    -webkit-appearance: none;
     cursor: pointer;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #f3dd9a 50%),
+        linear-gradient(135deg, #f3dd9a 50%, transparent 50%);
+    background-position:
+        calc(100% - 14px) 10px,
+        calc(100% - 9px) 10px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+/* Dropdown hover/focus */
+select:hover {
+    border-color: #ffe7a5;
     box-shadow:
-        0 0 6px rgba(255, 233, 164, 0.8),
-        0 0 14px rgba(255, 225, 145, 0.8);
+        0 0 0 1px rgba(255, 232, 158, 0.7),
+        0 0 14px rgba(255, 228, 147, 0.45);
+}
+
+select:focus {
+    border-color: #ffe292;
+    box-shadow:
+        0 0 0 1px rgba(255, 232, 158, 0.95),
+        0 0 18px rgba(255, 225, 145, 0.8);
+}
+
+/* Dropdown list items */
+select option {
+    background-color: #0b1f16 !important;
+    color: #ffebba !important;
+    padding: 8px 10px !important;
+    border: none !important;
+}
+
+select option:checked,
+select option:hover {
+    background-color: #15462f !important;
+    color: #fff6d9 !important;
+}
+
+#voice-select-wrapper {
+    margin-top: 6px;
+}
+
+/* MIC BUTTON CARD */
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+#talk-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    outline: none;
+    padding: 11px 26px;
+    border-radius: 999px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(130deg, #ffe8a1, #f4c860, #e3a936);
+    color: #3c2a08;
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.7),
+        0 0 18px rgba(255, 231, 150, 0.65);
+    transition: transform 0.14s ease-out, box-shadow 0.14s ease-out, opacity 0.1s;
+}
+
+.btn-emoji {
+    font-size: 1.1rem;
 }
 
 #talk-button:hover {
-    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.8),
+        0 0 22px rgba(255, 233, 160, 0.9);
+}
+
+#talk-button:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.7),
+        0 0 12px rgba(255, 225, 145, 0.6);
 }
 
 .helper-text {
-    font-size: 0.78rem;
-    margin-top: 8px;
-    color: #e7d8b1;
+    font-size: 0.76rem;
+    color: #f4ebcf;
 }
 
-/* ----------------------------------------------------
-   LOADING INDICATOR
------------------------------------------------------*/
+/* LOADING INDICATOR */
 #loading-indicator {
     display: none;
     flex-direction: column;
     align-items: center;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: #f8f1da;
 }
 
 .spinner {
-    width: 22px;
-    height: 22px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top-color: #ffe9a3;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    animation: spin 0.9s linear infinite;
+    border: 2px solid rgba(255, 246, 210, 0.35);
+    border-top-color: #ffe292;
+    animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
 
-#loading-indicator p {
-    margin-top: 6px;
-    font-size: 0.8rem;
-    color: #ffe7c1;
+/* TEXT CARD */
+.card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-/* ----------------------------------------------------
-   TEXT BOXES
------------------------------------------------------*/
 .text-boxes {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
+}
+
+.text-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .text-box label {
-    font-size: 0.82rem;
-    color: #eedfb5;
-    margin-bottom: 5px;
-    display: block;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #e9d7a6;
 }
 
 textarea {
     width: 100%;
-    min-height: 85px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(200,170,90,0.45);
-    background: #0a1f14;
-    color: #ffe7b0;
-    font-size: 0.92rem;
-    resize: none;
+    min-height: 80px;
+    resize: vertical;
+    border-radius: 14px;
+    border: 1px solid rgba(205, 177, 102, 0.7);
+    padding: 8px 10px;
+    background: #020905;
+    color: #fff6d9;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    outline: none;
 }
 
-/* ----------------------------------------------------
-   BUTTON ROW (Clear, Copy, Mute)
------------------------------------------------------*/
+textarea::placeholder {
+    color: #b29c6e;
+}
+
+textarea:focus {
+    border-color: #ffe292;
+    box-shadow: 0 0 0 1px rgba(255, 234, 167, 0.9);
+}
+
+/* BUTTON ROW */
 .button-row {
-    margin-top: 10px;
     display: flex;
-    gap: 10px;
     justify-content: space-between;
+    gap: 6px;
+    margin-top: 4px;
 }
 
 .icon-button {
     flex: 1;
-    background: linear-gradient(180deg, #1b3d2c, #0c2417);
-    border: 1px solid rgba(199,174,94,0.45);
-    border-radius: 14px;
-    color: #ffeaba;
-    padding: 10px 0;
-    font-size: 0.85rem;
-}
-
-/* ----------------------------------------------------
-   STATUS LINE
------------------------------------------------------*/
-.status {
-    margin-top: 10px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 999px;
     font-size: 0.78rem;
-    text-align: center;
-    color: #eadcb7;
+    border: 1px solid rgba(204, 177, 106, 0.85);
+    background: radial-gradient(circle at top, #143121 0, #050c07 75%);
+    color: #f8f0d6;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.12s ease-out, transform 0.08s ease-out,
+                border-color 0.12s, box-shadow 0.12s;
 }
 
-/* ----------------------------------------------------
-   FOOTER (Signature Plate Style)
------------------------------------------------------*/
+.icon-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-button:hover {
+    background: radial-gradient(circle at top, #19412a 0, #050c07 75%);
+    border-color: #ffe7a5;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+    transform: translateY(-0.5px);
+}
+
+.icon-button:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: none;
+}
+
+/* STATUS */
+.status {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    min-height: 1em;
+    color: #e1d0a6;
+}
+
+/* FOOTER */
 .app-footer {
     padding: 10px 18px 14px;
     background:
@@ -328,4 +494,21 @@ textarea {
 
 .footer-links a:hover {
     text-decoration: underline;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+    body {
+        padding: 6px;
+    }
+
+    .app-shell {
+        max-width: 100%;
+        border-radius: 0;
+    }
+
+    .app-shell::before,
+    .app-shell::after {
+        border-radius: 0;
+    }
 }
