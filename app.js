@@ -6,7 +6,6 @@
 
 const sourceSelect = document.getElementById("language-select-source");
 const targetSelect = document.getElementById("language-select-target");
-const voiceSelect  = document.getElementById("voice-select");
 
 const talkButton   = document.getElementById("talk-button");
 const muteButton   = document.getElementById("mute-button");
@@ -30,7 +29,6 @@ let isListening = false;
 let isMuted     = false;
 let recognition = null;
 let debounceTimer = null;
-let voices = [];
 
 /* -------------------- Constants -------------------- */
 
@@ -59,6 +57,31 @@ function mapSourceForTranslate(code) {
     return lower.split("-")[0];
 }
 
+/**
+ * Choose a reasonable speech language code from the target code.
+ * e.g. "en" -> "en-US", "hi" -> "hi-IN", otherwise use the code directly.
+ */
+function getSpeechLangFromTarget(targetCode) {
+    if (!targetCode) return "en-US";
+
+    const code = targetCode.toLowerCase();
+
+    if (code === "en") return "en-US";
+    if (code === "hi") return "hi-IN";
+    if (code === "mr") return "mr-IN";
+    if (code === "es") return "es-ES";
+    if (code === "fr") return "fr-FR";
+    if (code === "de") return "de-DE";
+    if (code === "zh") return "zh-CN";
+    if (code === "ja") return "ja-JP";
+    if (code === "ko") return "ko-KR";
+    if (code === "pt") return "pt-PT";
+    if (code === "ar") return "ar-SA";
+    if (code === "ru") return "ru-RU";
+
+    return code; // fallback: use as-is
+}
+
 function speakTranslation(text) {
     if (isMuted || !window.speechSynthesis || !text) return;
 
@@ -68,13 +91,8 @@ function speakTranslation(text) {
     const utter = new SpeechSynthesisUtterance(text);
     const targetCode = targetSelect.value || "en";
 
-    const selectedVoiceName = voiceSelect.value;
-    if (selectedVoiceName && voices.length) {
-        const found = voices.find(v => v.name === selectedVoiceName);
-        if (found) utter.voice = found;
-    }
-
-    utter.lang = (utter.voice && utter.voice.lang) || targetCode || "en-US";
+    // Default voice selection based on target language only
+    utter.lang = getSpeechLangFromTarget(targetCode);
 
     synth.speak(utter);
 }
@@ -255,28 +273,6 @@ function setupRecognition() {
     talkButton.disabled = false;
 }
 
-/* -------------------- Voices -------------------- */
-
-function populateVoices() {
-    if (!window.speechSynthesis) return;
-
-    voices = window.speechSynthesis.getVoices();
-
-    while (voiceSelect.options.length > 1) {
-        voiceSelect.remove(1);
-    }
-
-    voices
-        .slice()
-        .sort((a, b) => a.lang.localeCompare(b.lang))
-        .forEach(voice => {
-            const option = document.createElement("option");
-            option.value = voice.name;
-            option.textContent = `${voice.name} (${voice.lang})`;
-            voiceSelect.appendChild(option);
-        });
-}
-
 /* -------------------- Event listeners -------------------- */
 
 talkButton.addEventListener("click", () => {
@@ -376,11 +372,6 @@ window.addEventListener("online", () => {
 document.addEventListener("DOMContentLoaded", () => {
     setDefaultSourceLanguage();
     setupRecognition();
-    populateVoices();
-
-    if (window.speechSynthesis) {
-        window.speechSynthesis.onvoiceschanged = populateVoices;
-    }
 
     if (isOffline()) {
         showStatus(OFFLINE_MESSAGE, true);
