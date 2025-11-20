@@ -32,6 +32,11 @@ let recognition = null;
 let debounceTimer = null;
 let voices = [];
 
+/* -------------------- Constants -------------------- */
+
+const OFFLINE_MESSAGE =
+    "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.";
+
 /* -------------------- Helpers -------------------- */
 
 function showStatus(message, isError = false) {
@@ -74,6 +79,69 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
+/**
+ * Set default source language based on browser location / language.
+ * - If user appears to be from India: default Hindi (hi-IN) or Marathi (mr-IN).
+ * - Else fallback: hi / mr / en based on browser language.
+ */
+function setDefaultSourceLanguage() {
+    try {
+        const navLangRaw = (navigator.language || "").toLowerCase(); // e.g. "en-in", "hi-in"
+        let tz = "";
+
+        try {
+            if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+                const opts = Intl.DateTimeFormat().resolvedOptions();
+                tz = (opts && opts.timeZone) || "";
+            }
+        } catch (e) {
+            tz = "";
+        }
+
+        const tzLower = (tz || "").toLowerCase();
+
+        let defaultCode = null;
+
+        // Broad "India" detection
+        const isIndia =
+            tzLower.includes("kolkata") ||
+            tzLower.includes("calcutta") ||
+            navLangRaw.endsWith("-in");
+
+        if (isIndia) {
+            if (navLangRaw.startsWith("mr")) {
+                defaultCode = "mr-IN";  // Marathi for India if browser prefers mr
+            } else {
+                defaultCode = "hi-IN";  // default Hindi for India
+            }
+        }
+
+        // If still nothing, fallback on language only
+        if (!defaultCode && navLangRaw) {
+            if (navLangRaw.startsWith("hi")) {
+                defaultCode = "hi-IN";
+            } else if (navLangRaw.startsWith("mr")) {
+                defaultCode = "mr-IN";
+            } else if (navLangRaw.startsWith("en")) {
+                defaultCode = "en-US";
+            }
+        }
+
+        if (defaultCode) {
+            const options = Array.from(sourceSelect.options);
+            const exists = options.some(o => o.value === defaultCode);
+            if (exists) {
+                sourceSelect.value = defaultCode;
+                // Optional: uncomment next line if you want a visible message when it switches
+                // showStatus(`Default input language set to ${sourceSelect.options[sourceSelect.selectedIndex].text}.`);
+            }
+        }
+    } catch (e) {
+        console.error("Could not set default source language:", e);
+        // If anything fails, keep the HTML default (English US)
+    }
+}
+
 /* -------------------- Translation (MyMemory) -------------------- */
 
 async function translate(text) {
@@ -83,12 +151,9 @@ async function translate(text) {
         return;
     }
 
-    // OFFLINE HANDLING (your requested text)
+    // OFFLINE HANDLING – always show your exact message
     if (isOffline()) {
-        showStatus(
-            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
-            true
-        );
+        showStatus(OFFLINE_MESSAGE, true);
         return;
     }
 
@@ -123,10 +188,16 @@ async function translate(text) {
         speakTranslation(translated);
     } catch (err) {
         console.error("Translation error:", err);
-        showStatus(
-            "Unable to translate right now. Please check your internet or try again in a while.",
-            true
-        );
+
+        // If we reach here and device is now offline, show your offline message
+        if (isOffline()) {
+            showStatus(OFFLINE_MESSAGE, true);
+        } else {
+            showStatus(
+                "Unable to translate right now. Please check your internet or try again in a while.",
+                true
+            );
+        }
     } finally {
         setLoading(false);
     }
@@ -227,10 +298,7 @@ talkButton.addEventListener("click", () => {
     }
 
     if (isOffline()) {
-        showStatus(
-            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
-            true
-        );
+        showStatus(OFFLINE_MESSAGE, true);
         return;
     }
 
@@ -306,10 +374,7 @@ inputTextEl.addEventListener("input", () => {
 
 // Live online/offline status updates
 window.addEventListener("offline", () => {
-    showStatus(
-        "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
-        true
-    );
+    showStatus(OFFLINE_MESSAGE, true);
 });
 
 window.addEventListener("online", () => {
@@ -319,6 +384,7 @@ window.addEventListener("online", () => {
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+    setDefaultSourceLanguage();  // Try to set Hindi/Marathi for India
     setupRecognition();
     populateVoices();
 
@@ -327,9 +393,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (isOffline()) {
-        showStatus(
-            "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.",
-            true
-        );
+        showStatus(OFFLINE_MESSAGE, true);
     }
 });
