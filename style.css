@@ -54,4 +54,342 @@ body {
 /* ------------ Header ------------ */
 
 .app-header {
-    padding: 10px 1
+    padding: 10px 18px 14px;
+    border-radius: 0 0 22px 22px;
+    background: linear-gradient(130deg, #0c3b7b, #2557d1, #4b8dff);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
+.app-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#app-logo-svg {
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.4));
+    flex-shrink: 0;
+}
+
+.app-title-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.app-tagline {
+    font-size: 0.78rem;
+    opacity: 0.9;
+}
+
+/* ------------ Main area (scrollable) ------------ */
+
+.translator {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px 8px;
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(127, 164, 255, 0.7) transparent;
+}
+
+.translator::-webkit-scrollbar {
+    width: 5px;
+}
+.translator::-webkit-scrollbar-thumb {
+    background: rgba(127, 164, 255, 0.7);
+    border-radius: 999px;
+}
+
+/* Cards inside app */
+
+.card {
+    background: rgba(14, 18, 35, 0.92);
+    border-radius: 18px;
+    padding: 12px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ------------ Language selection ------------ */
+
+.card-languages .controls {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.select-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.select-wrapper label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a9b3cf;
+}
+
+select {
+    background: radial-gradient(circle at top, #12172a 0, #070916 65%);
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 30px 8px 12px;
+    color: #f5f5f5;
+    font-size: 0.86rem;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+}
+
+/* little dropdown arrow effect */
+select {
+    background-image:
+        linear-gradient(45deg, transparent 50%, #a1b3ff 50%),
+        linear-gradient(135deg, #a1b3ff 50%, transparent 50%);
+    background-position:
+        calc(100% - 14px) 10px,
+        calc(100% - 9px) 10px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+select:focus {
+    border-color: #4b8dff;
+    box-shadow: 0 0 0 1px rgba(91, 151, 255, 0.7);
+}
+
+/* Voice select below */
+
+#voice-select-wrapper {
+    margin-top: 6px;
+}
+
+/* ------------ Mic + helper ------------ */
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+#talk-button {
+    border: none;
+    outline: none;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: radial-gradient(circle at top left, #2fd6ff, #0b84ff, #0051ff);
+    color: white;
+    box-shadow: 0 14px 34px rgba(0, 118, 255, 0.8);
+    transition: transform 0.14s ease-out, box-shadow 0.14s ease-out, opacity 0.1s;
+}
+
+#talk-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 42px rgba(0, 118, 255, 0.85);
+}
+
+#talk-button:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: 0 10px 26px rgba(0, 118, 255, 0.7);
+}
+
+.helper-text {
+    font-size: 0.76rem;
+    color: #b3bfd8;
+}
+
+/* Loading indicator */
+
+#loading-indicator {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: #d0e1ff;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #4facfe;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ------------ Text areas ------------ */
+
+.card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.text-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.text-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.text-box label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #a9b3cf;
+}
+
+textarea {
+    width: 100%;
+    min-height: 80px;
+    resize: vertical;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 8px 10px;
+    background: #050711;
+    color: #f5f5f5;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    outline: none;
+}
+
+textarea::placeholder {
+    color: #6f7992;
+}
+
+textarea:focus {
+    border-color: #4b8dff;
+    box-shadow: 0 0 0 1px rgba(91, 151, 255, 0.65);
+}
+
+/* ------------ Action buttons row ------------ */
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.icon-button {
+    flex: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: radial-gradient(circle at top, #13182a 0, #070916 80%);
+    color: #e3e7f8;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.12s ease-out, transform 0.08s ease-out, border-color 0.12s, box-shadow 0.12s;
+}
+
+.icon-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-button:hover {
+    background: #181e33;
+    border-color: rgba(91, 151, 255, 0.8);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    transform: translateY(-0.5px);
+}
+
+.icon-button:active {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: none;
+}
+
+/* Status label */
+
+.status {
+    margin-top: 4px;
+    font-size: 0.76rem;
+    min-height: 1em;
+    color: #a9b3cf;
+}
+
+/* ------------ Footer inside phone ------------ */
+
+.app-footer {
+    padding: 6px 16px 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(6, 8, 18, 0.96);
+    font-size: 0.72rem;
+    color: #a1abc5;
+    text-align: center;
+}
+
+.footer-links {
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.footer-links a {
+    color: #7fb3ff;
+    text-decoration: none;
+    font-size: 0.72rem;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* ------------ Responsive tweaks ------------ */
+
+@media (max-width: 480px) {
+    body {
+        padding: 6px;
+        align-items: stretch;
+    }
+
+    .app-shell {
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .app-shell::before {
+        display: none;
+    }
+}
