@@ -426,4 +426,11 @@ textarea:focus {
     .app-shell::before {
         display: none;
     }
+}/* FIX: visible dropdown options */
+select option {
+    background-color: #0b1f16 !important;
+    color: #ffebba !important;
+    padding: 8px !important;
+    border: none !important;
 }
+
