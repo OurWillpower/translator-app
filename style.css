@@ -230,7 +230,7 @@ textarea {
 
 /* FINAL APP FOOTER STYLES */
 #app-footer {
-    color: #ffffff !important; 
+    color: #ffffff !important; /* FORCED WHITE FONT FIX */
     font-size: 0.75rem;
     text-align: center;
     margin-top: 30px;
