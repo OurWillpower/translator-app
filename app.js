@@ -47,7 +47,7 @@ function setLoading(isLoading) {
 function mapSourceForTranslate(code) {
     if (!code || code === "auto") return "auto";
     const lower = code.toLowerCase();
-    return lower.split("-")[0]; // part before "-"
+    return lower.split("-")[0];
 }
 
 function speakTranslation(text) {
@@ -70,6 +70,61 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
+/**
+ * Set default source language based on browser location / language.
+ * - If user appears to be from India: default Hindi (hi-IN), or Marathi if browser language is Marathi.
+ * - Else fallback: hi / mr / en based on browser language.
+ */
+function setDefaultSourceLanguage() {
+    try {
+        const navLangRaw = (navigator.language || "").toLowerCase(); // e.g. "en-in", "hi-in"
+        const tz = Intl.DateTimeFormat
+            ? (Intl.DateTimeFormat().resolvedOptions().timeZone || "")
+            : "";
+
+        let defaultCode = null;
+
+        const isIndia =
+            tz === "Asia/Kolkata" ||
+            navLangRaw.endsWith("-in");
+
+        if (isIndia) {
+            if (navLangRaw.startsWith("mr")) {
+                // user is likely Marathi-preferring in India
+                defaultCode = "mr-IN";
+            } else if (navLangRaw.startsWith("hi")) {
+                defaultCode = "hi-IN";
+            } else {
+                // general India case: default to Hindi
+                defaultCode = "hi-IN";
+            }
+        }
+
+        // If nothing decided yet, try based just on language
+        if (!defaultCode && navLangRaw) {
+            if (navLangRaw.startsWith("hi")) {
+                defaultCode = "hi-IN";
+            } else if (navLangRaw.startsWith("mr")) {
+                defaultCode = "mr-IN";
+            } else if (navLangRaw.startsWith("en")) {
+                defaultCode = "en-US";
+            }
+        }
+
+        if (defaultCode) {
+            const options = Array.from(sourceSelect.options);
+            const exists = options.some(o => o.value === defaultCode);
+            if (exists) {
+                sourceSelect.value = defaultCode;
+                showStatus(`Default input language set to ${sourceSelect.options[sourceSelect.selectedIndex].text}.`);
+            }
+        }
+    } catch (e) {
+        // If anything fails, just keep the default set in HTML
+        console.error("Could not set default source language:", e);
+    }
+}
+
 /* -------------------- Translation (MyMemory) -------------------- */
 
 async function translate(text) {
@@ -79,8 +134,7 @@ async function translate(text) {
         return;
     }
 
-    // Read exactly what is selected NOW
-    const sourceLang = mapSourceForTranslate(sourceSelect.value); // e.g. "en-US" -> "en"
+    const sourceLang = mapSourceForTranslate(sourceSelect.value);
     const targetLang = targetSelect.value || "en";
 
     const srcCode = sourceLang === "auto" ? "auto" : sourceLang;
@@ -281,6 +335,9 @@ inputTextEl.addEventListener("input", () => {
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+    // Set default source language based on location / language
+    setDefaultSourceLanguage();
+
     setupRecognition();
     populateVoices();
 
