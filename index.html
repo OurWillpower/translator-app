@@ -40,43 +40,27 @@
             <!-- LANGUAGE & VOICE CARD -->
             <section class="card card-languages">
                 <div class="controls">
+                    <!-- FROM: identical languages with To, plus Auto-Detect -->
                     <div class="select-wrapper">
                         <label for="language-select-source">From:</label>
                         <select id="language-select-source">
-                            <option value="en-US">English (US)</option>
-                            <option value="hi-IN">Hindi</option>
-                            <option value="mr-IN">Marathi</option>
-                            <option value="en-GB">English (UK)</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="zh-CN">Chinese (Mandarin)</option>
-                            <option value="auto">Auto-Detect (Typing)</option>
-                        </select>
-                    </div>
-
-                    <div class="select-wrapper">
-                        <label for="language-select-target">To:</label>
-                        <select id="language-select-target">
                             <!-- VOICE + TEXT (RECOMMENDED) -->
                             <optgroup label="Voice + Text (Recommended)">
-                                <!-- English first as default -->
-                                <option value="en">🔊 English</option>
+                                <!-- Keep earlier defaults with regions for recognition -->
+                                <option value="en-US">🔊 English (US)</option>
+                                <option value="en-GB">🔊 English (UK)</option>
+                                <option value="hi-IN">🔊 Hindi</option>
+                                <option value="mr-IN">🔊 Marathi</option>
 
-                                <!-- Indian languages (voice usually available on many Android/iOS setups) -->
-                                <option value="hi">🔊 Hindi</option>
-                                <option value="mr">🔊 Marathi</option>
-
-                                <!-- Major global languages with strong voice support -->
-                                <option value="es">🔊 Spanish</option>
-                                <option value="fr">🔊 French</option>
-                                <option value="de">🔊 German</option>
+                                <!-- Global voice-supported languages -->
+                                <option value="es-ES">🔊 Spanish</option>
+                                <option value="fr-FR">🔊 French</option>
+                                <option value="de-DE">🔊 German</option>
                                 <option value="it">🔊 Italian</option>
                                 <option value="pt">🔊 Portuguese</option>
                                 <option value="ru">🔊 Russian</option>
-                                <option value="zh">🔊 Chinese (Simplified)</option>
-                                <option value="ja">🔊 Japanese</option>
+                                <option value="zh-CN">🔊 Chinese (Simplified)</option>
+                                <option value="ja-JP">🔊 Japanese</option>
                                 <option value="ko">🔊 Korean</option>
                                 <option value="ar">🔊 Arabic</option>
 
@@ -99,9 +83,12 @@
                                 <option value="hu">🔊 Hungarian</option>
                             </optgroup>
 
-                            <!-- TEXT-ONLY (TRANSLATION) – may or may not have TTS on some devices -->
+                            <!-- TEXT-ONLY (TRANSLATION) -->
                             <optgroup label="Text Only (Translation)">
-                                <!-- More Indian languages -->
+                                <!-- Auto detect only for FROM -->
+                                <option value="auto">Teᵗ Auto-Detect (Typing)</option>
+
+                                <!-- Indian languages -->
                                 <option value="bn">Teᵗ Bengali</option>
                                 <option value="gu">Teᵗ Gujarati</option>
                                 <option value="ta">Teᵗ Tamil</option>
@@ -132,6 +119,84 @@
                             </optgroup>
                         </select>
                     </div>
+
+                    <!-- TO: identical languages (no auto-detect) -->
+                    <div class="select-wrapper">
+                        <label for="language-select-target">To:</label>
+                        <select id="language-select-target">
+                            <!-- VOICE + TEXT (RECOMMENDED) -->
+                            <optgroup label="Voice + Text (Recommended)">
+                                <!-- English default -->
+                                <option value="en">🔊 English</option>
+
+                                <!-- Indian -->
+                                <option value="hi">🔊 Hindi</option>
+                                <option value="mr">🔊 Marathi</option>
+
+                                <!-- Global -->
+                                <option value="es">🔊 Spanish</option>
+                                <option value="fr">🔊 French</option>
+                                <option value="de">🔊 German</option>
+                                <option value="it">🔊 Italian</option>
+                                <option value="pt">🔊 Portuguese</option>
+                                <option value="ru">🔊 Russian</option>
+                                <option value="zh">🔊 Chinese (Simplified)</option>
+                                <option value="ja">🔊 Japanese</option>
+                                <option value="ko">🔊 Korean</option>
+                                <option value="ar">🔊 Arabic</option>
+
+                                <option value="tr">🔊 Turkish</option>
+                                <option value="nl">🔊 Dutch</option>
+                                <option value="sv">🔊 Swedish</option>
+                                <option value="da">🔊 Danish</option>
+                                <option value="no">🔊 Norwegian</option>
+                                <option value="fi">🔊 Finnish</option>
+
+                                <option value="th">🔊 Thai</option>
+                                <option value="vi">🔊 Vietnamese</option>
+                                <option value="id">🔊 Indonesian</option>
+
+                                <option value="pl">🔊 Polish</option>
+                                <option value="el">🔊 Greek</option>
+                                <option value="he">🔊 Hebrew</option>
+                                <option value="ro">🔊 Romanian</option>
+                                <option value="cs">🔊 Czech</option>
+                                <option value="hu">🔊 Hungarian</option>
+                            </optgroup>
+
+                            <!-- TEXT-ONLY (TRANSLATION) -->
+                            <optgroup label="Text Only (Translation)">
+                                <!-- Indian -->
+                                <option value="bn">Teᵗ Bengali</option>
+                                <option value="gu">Teᵗ Gujarati</option>
+                                <option value="ta">Teᵗ Tamil</option>
+                                <option value="te">Teᵗ Telugu</option>
+                                <option value="kn">Teᵗ Kannada</option>
+                                <option value="ml">Teᵗ Malayalam</option>
+                                <option value="pa">Teᵗ Punjabi</option>
+                                <option value="or">Teᵗ Odia</option>
+                                <option value="as">Teᵗ Assamese</option>
+                                <option value="ur">Teᵗ Urdu</option>
+
+                                <!-- Others -->
+                                <option value="uk">Teᵗ Ukrainian</option>
+                                <option value="sk">Teᵗ Slovak</option>
+                                <option value="sl">Teᵗ Slovenian</option>
+                                <option value="bg">Teᵗ Bulgarian</option>
+                                <option value="hr">Teᵗ Croatian</option>
+                                <option value="sr">Teᵗ Serbian</option>
+                                <option value="bs">Teᵗ Bosnian</option>
+                                <option value="et">Teᵗ Estonian</option>
+                                <option value="lv">Teᵗ Latvian</option>
+                                <option value="lt">Teᵗ Lithuanian</option>
+                                <option value="sw">Teᵗ Swahili</option>
+                                <option value="ms">Teᵗ Malay</option>
+                                <option value="tl">Teᵗ Filipino</option>
+                                <option value="ne">Teᵗ Nepali</option>
+                                <option value="si">Teᵗ Sinhala</option>
+                            </optgroup>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="select-wrapper" id="voice-select-wrapper">
@@ -141,7 +206,7 @@
                     </select>
                 </div>
 
-                <!-- Premium gold legend at the bottom of the language card -->
+                <!-- Premium gold legend at bottom of language card -->
                 <div class="translation-legend">
                     <span class="legend-item">
                         <span class="legend-icon">🔊</span>
