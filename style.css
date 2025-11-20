@@ -169,11 +169,13 @@ body {
     color: #e6d4a3;
 }
 
+/* MAIN SELECT STYLE (closed state) */
+
 select {
     background:
         radial-gradient(circle at top, #173826 0, #07140d 70%);
     border-radius: 999px;
-    border: 1px solid rgba(199, 174, 94, 0.5);
+    border: 1px solid rgba(199, 174, 94, 0.7);
     padding: 8px 30px 8px 11px;
     color: #fdf5dd;
     font-size: 0.86rem;
@@ -181,6 +183,13 @@ select {
     appearance: none;
     -webkit-appearance: none;
     position: relative;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease,
+        transform 0.08s ease;
+    /* gold arrow */
     background-image:
         linear-gradient(45deg, transparent 50%, #f3dd9a 50%),
         linear-gradient(135deg, #f3dd9a 50%, transparent 50%);
@@ -191,9 +200,33 @@ select {
     background-repeat: no-repeat;
 }
 
+/* Hover / focus effects for dropdown (makes it feel fancy) */
+select:hover {
+    border-color: #ffe7a5;
+    box-shadow: 0 0 0 1px rgba(255, 232, 158, 0.6);
+    transform: translateY(-0.5px);
+}
+
 select:focus {
     border-color: #ffe292;
-    box-shadow: 0 0 0 1px rgba(255, 232, 158, 0.8);
+    box-shadow:
+        0 0 0 1px rgba(255, 232, 158, 0.9),
+        0 0 14px rgba(255, 225, 145, 0.6);
+}
+
+/* OPEN DROPDOWN LIST ITEMS */
+select option {
+    background-color: #0b1f16 !important;
+    color: #ffebba !important;
+    padding: 8px 10px !important;
+    border: none !important;
+}
+
+/* Some browsers support this hover color inside list */
+select option:checked,
+select option:hover {
+    background-color: #15462f !important;
+    color: #fff6d9 !important;
 }
 
 #voice-select-wrapper {
@@ -381,17 +414,31 @@ textarea:focus {
     color: #e1d0a6;
 }
 
-/* ===== FOOTER ===== */
+/* ===== FOOTER (MATCH TOP HEADER LOOK – “CLOSES” BOTTOM) ===== */
 
 .app-footer {
     position: relative;
     z-index: 1;
-    padding: 6px 14px 10px;
+    padding: 8px 14px 12px;
+    background:
+        radial-gradient(circle at bottom right, rgba(255, 250, 210, 0.2), transparent 60%),
+        linear-gradient(180deg, #103624 0%, #04150e 60%, #020805 100%);
     border-top: 1px solid rgba(196, 165, 95, 0.45);
-    background: linear-gradient(180deg, #07170f 0%, #030804 100%);
     font-size: 0.72rem;
     color: #e4d4a9;
     text-align: center;
+    box-shadow: 0 -10px 26px rgba(0, 0, 0, 0.7);
+}
+
+/* small gold highlight line like top */
+.app-footer::before {
+    content: "";
+    position: absolute;
+    inset-inline: 16px;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 227, 165, 0.7), transparent);
+    opacity: 0.7;
 }
 
 .footer-links {
@@ -426,11 +473,4 @@ textarea:focus {
     .app-shell::before {
         display: none;
     }
-}/* FIX: visible dropdown options */
-select option {
-    background-color: #0b1f16 !important;
-    color: #ffebba !important;
-    padding: 8px !important;
-    border: none !important;
 }
-
