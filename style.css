@@ -23,7 +23,7 @@ body {
     padding: 16px;
 }
 
-/* APP SHELL WITH ORNATE GOLD FRAME */
+/* APP SHELL WITH ORNATE GOLD FRAME (SAME ON LAPTOP & MOBILE) */
 .app-shell {
     position: relative;
     width: 100%;
@@ -232,7 +232,7 @@ select:focus {
         0 0 18px rgba(255, 225, 145, 0.8);
 }
 
-/* Dropdown list items */
+/* Dropdown list items (general) */
 select option {
     background-color: #0b1f16 !important;
     color: #ffebba !important;
@@ -240,14 +240,61 @@ select option {
     border: none !important;
 }
 
-select option:checked,
-select option:hover {
-    background-color: #15462f !important;
-    color: #fff6d9 !important;
+/* Voice+Text group (🔊) – keep normal weight */
+optgroup[label^="Voice + Text"] option {
+    font-style: normal;
+    font-weight: 500;
+    color: #ffeec4 !important;
 }
 
+/* Text-only group (Teᵗ) – italic, lighter, non-bold */
+optgroup[label^="Text Only"] option {
+    font-style: italic;
+    font-weight: 400;
+    color: #f4e3ba !important;
+}
+
+/* VOICE SELECT WRAPPER */
 #voice-select-wrapper {
     margin-top: 6px;
+}
+
+/* LEGEND UNDER LANGUAGE CARD */
+.translation-legend {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(212, 183, 108, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.7rem;
+    color: #e9d8a8;
+    opacity: 0.95;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.legend-icon {
+    font-size: 0.8rem;
+}
+
+.legend-te {
+    font-style: italic;
+    font-weight: 400;
+    color: #f7e7c0;
+}
+
+.legend-text {
+    font-size: 0.7rem;
+}
+
+.legend-separator {
+    opacity: 0.7;
 }
 
 /* MIC BUTTON CARD */
@@ -496,19 +543,3 @@ textarea:focus {
     text-decoration: underline;
 }
 
-/* MOBILE */
-@media (max-width: 480px) {
-    body {
-        padding: 6px;
-    }
-
-    .app-shell {
-        max-width: 100%;
-        border-radius: 0;
-    }
-
-    .app-shell::before,
-    .app-shell::after {
-        border-radius: 0;
-    }
-}
