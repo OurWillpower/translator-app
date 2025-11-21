@@ -28,7 +28,6 @@ const iconCheck   = document.getElementById("icon-check");
 let isListening = false;
 let isMuted     = false;
 let recognition = null;
-let debounceTimer = null;
 let voices = [];   // for TTS selection
 
 /* -------------------- Constants -------------------- */
@@ -36,7 +35,7 @@ let voices = [];   // for TTS selection
 const OFFLINE_MESSAGE =
     "You are offline. Speakly needs internet to translate. Use Speakly Pro for seamless offline use.";
 
-/* -------------------- Helpers -------------------- */
+/* -------------------- Basic helpers -------------------- */
 
 function showStatus(message, isError = false) {
     statusEl.textContent = message || "";
@@ -82,7 +81,7 @@ function getSpeechLangFromTarget(targetCode) {
     return code;
 }
 
-/* ---- Voice warm-up ---- */
+/* -------------------- Voice (TTS) -------------------- */
 
 function warmVoices() {
     if (!window.speechSynthesis) return;
@@ -131,6 +130,62 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
+/* -------------------- Default source language (India-aware) -------------------- */
+
+function setDefaultSourceLanguage() {
+    try {
+        const navLangRaw = (navigator.language || "").toLowerCase(); // e.g. "en-in", "hi-in"
+        let tz = "";
+
+        try {
+            if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
+                const opts = Intl.DateTimeFormat().resolvedOptions();
+                tz = (opts && opts.timeZone) || "";
+            }
+        } catch (e) {
+            tz = "";
+        }
+
+        const tzLower = (tz || "").toLowerCase();
+        let defaultCode = null;
+
+        // Broad "India" detection
+        const isIndia =
+            tzLower.includes("kolkata") ||
+            tzLower.includes("calcutta") ||
+            navLangRaw.endsWith("-in");
+
+        if (isIndia) {
+            if (navLangRaw.startsWith("mr")) {
+                defaultCode = "mr-IN";  // Marathi if browser pref is mr
+            } else {
+                defaultCode = "hi-IN";  // default Hindi for India
+            }
+        }
+
+        // If still nothing, fallback on language only
+        if (!defaultCode && navLangRaw) {
+            if (navLangRaw.startsWith("hi")) {
+                defaultCode = "hi-IN";
+            } else if (navLangRaw.startsWith("mr")) {
+                defaultCode = "mr-IN";
+            } else if (navLangRaw.startsWith("en")) {
+                defaultCode = "en-US";
+            }
+        }
+
+        if (defaultCode) {
+            const options = Array.from(sourceSelect.options);
+            const exists = options.some(o => o.value === defaultCode);
+            if (exists) {
+                sourceSelect.value = defaultCode;
+            }
+        }
+    } catch (e) {
+        console.error("Could not set default source language:", e);
+    }
+}
+
 /* -------------------- Input–language validation -------------------- */
 
 const SCRIPT_REGEX = {
@@ -176,6 +231,7 @@ function inputMatchesSelectedLanguage(text, sourceCode) {
 }
 
 function showLanguageMismatchError() {
+    // Short, crisp error
     showStatus("टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता", true);
 }
 
@@ -190,6 +246,7 @@ async function translate(text) {
 
     const sourceCodeRaw = sourceSelect.value;
 
+    // Validate script vs selected "From" language
     if (sourceCodeRaw && sourceCodeRaw !== "auto") {
         const ok = inputMatchesSelectedLanguage(trimmed, sourceCodeRaw);
         if (!ok) {
@@ -340,7 +397,7 @@ copyButton.addEventListener("click", async () => {
 
 /* 
 ---------------------------------------------------------------
- NEW FEATURE: Auto-translate on Enter, Tab, or leaving the box
+ Auto-translate on Enter, Tab, or leaving the input box
 ---------------------------------------------------------------
 */
 
@@ -361,6 +418,7 @@ inputTextEl.addEventListener("blur", () => {
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
+    setDefaultSourceLanguage();   // 👍 restore smart default (Hindi/Marathi/English)
     setupRecognition();
 
     if (window.speechSynthesis) {
