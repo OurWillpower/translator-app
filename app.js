@@ -34,7 +34,7 @@ let voices = [];   // for TTS selection
 /* -------------------- Constants -------------------- */
 
 const OFFLINE_MESSAGE =
-    "You are offline. Speakly needs internet to translate. Use Speakly Pro to use seamlessly in offline conditions.";
+    "You are offline. Speakly needs internet to translate. Use Speakly Pro for seamless offline use.";
 
 /* -------------------- Helpers -------------------- */
 
@@ -83,9 +83,8 @@ function getSpeechLangFromTarget(targetCode) {
     return code; // fallback: use as-is
 }
 
-/**
- * Warm up the available voices so speech works reliably.
- */
+/* ---- Voice warm-up ---- */
+
 function warmVoices() {
     if (!window.speechSynthesis) return;
     const synth = window.speechSynthesis;
@@ -95,9 +94,6 @@ function warmVoices() {
     }
 }
 
-/**
- * Try to pick a voice that matches the desired language, else let browser decide.
- */
 function chooseVoiceForLang(langCode) {
     if (!voices || !voices.length) return null;
     const codeLower = langCode.toLowerCase();
@@ -106,7 +102,7 @@ function chooseVoiceForLang(langCode) {
     let v = voices.find(v => v.lang.toLowerCase() === codeLower);
     if (v) return v;
 
-    // match language prefix e.g. "en" matches "en-US"
+    // language prefix
     const prefix = codeLower.split("-")[0];
     v = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
     if (v) return v;
@@ -120,7 +116,6 @@ function speakTranslation(text) {
     const synth = window.speechSynthesis;
     synth.cancel();
 
-    // ensure voices list loaded at least once
     if (!voices || !voices.length) {
         warmVoices();
     }
@@ -139,14 +134,11 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
-/**
- * Set default source language based on browser location / language.
- * - If user appears to be from India: default Hindi (hi-IN) or Marathi (mr-IN).
- * - Else fallback: hi / mr / en based on browser language.
- */
+/* ---- Default source language (India-aware) ---- */
+
 function setDefaultSourceLanguage() {
     try {
-        const navLangRaw = (navigator.language || "").toLowerCase(); // e.g. "en-in", "hi-in"
+        const navLangRaw = (navigator.language || "").toLowerCase();
         let tz = "";
 
         try {
@@ -159,10 +151,8 @@ function setDefaultSourceLanguage() {
         }
 
         const tzLower = (tz || "").toLowerCase();
-
         let defaultCode = null;
 
-        // Broad "India" detection
         const isIndia =
             tzLower.includes("kolkata") ||
             tzLower.includes("calcutta") ||
@@ -170,13 +160,12 @@ function setDefaultSourceLanguage() {
 
         if (isIndia) {
             if (navLangRaw.startsWith("mr")) {
-                defaultCode = "mr-IN";  // Marathi for India if browser prefers mr
+                defaultCode = "mr-IN";
             } else {
-                defaultCode = "hi-IN";  // default Hindi for India
+                defaultCode = "hi-IN";
             }
         }
 
-        // If still nothing, fallback on language only
         if (!defaultCode && navLangRaw) {
             if (navLangRaw.startsWith("hi")) {
                 defaultCode = "hi-IN";
@@ -199,6 +188,107 @@ function setDefaultSourceLanguage() {
     }
 }
 
+/* -------------------- Input–language validation -------------------- */
+
+/**
+ * For some scripts (Hindi, Marathi, etc.), ensure the typed text actually
+ * contains characters from that script. This prevents strange translations
+ * like "Hello" in Latin letters -> random phrase.
+ */
+
+const SCRIPT_REGEX = {
+    devanagari: /[\u0900-\u097F]/,    // Hindi, Marathi, Nepali, etc.
+    bengali: /[\u0980-\u09FF]/,
+    gurmukhi: /[\u0A00-\u0A7F]/,
+    gujarati: /[\u0A80-\u0AFF]/,
+    oriya: /[\u0B00-\u0B7F]/,
+    tamil: /[\u0B80-\u0BFF]/,
+    telugu: /[\u0C00-\u0C7F]/,
+    kannada: /[\u0C80-\u0CFF]/,
+    malayalam: /[\u0D00-\u0D7F]/,
+    sinhala: /[\u0D80-\u0DFF]/,
+    thai: /[\u0E00-\u0E7F]/,
+};
+
+/**
+ * Decide which script we expect based on the selected "From" language.
+ * Only validate for languages where script is clear (Hindi, Marathi etc.).
+ */
+function getExpectedScriptForSourceLang(sourceCode) {
+    if (!sourceCode) return null;
+    const lc = sourceCode.toLowerCase();
+
+    if (lc.startsWith("hi") || lc.startsWith("mr") || lc.startsWith("ne")) {
+        return "devanagari";
+    }
+    if (lc.startsWith("bn")) return "bengali";
+    if (lc.startsWith("pa")) return "gurmukhi";
+    if (lc.startsWith("gu")) return "gujarati";
+    if (lc.startsWith("or")) return "oriya";
+    if (lc.startsWith("ta")) return "tamil";
+    if (lc.startsWith("te")) return "telugu";
+    if (lc.startsWith("kn")) return "kannada";
+    if (lc.startsWith("ml")) return "malayalam";
+    if (lc.startsWith("si")) return "sinhala";
+    if (lc.startsWith("th")) return "thai";
+
+    return null;
+}
+
+/**
+ * Returns true if the text looks consistent with the selected "From" language.
+ */
+function inputMatchesSelectedLanguage(text, sourceCode) {
+    const script = getExpectedScriptForSourceLang(sourceCode);
+    if (!script) {
+        // No special validation for this language
+        return true;
+    }
+    const regex = SCRIPT_REGEX[script];
+    if (!regex) return true;
+
+    return regex.test(text);
+}
+
+/**
+ * Show a short, crisp mismatch error in the selected input language where possible.
+ */
+function showLanguageMismatchError(sourceCodeRaw) {
+    const baseMsg =
+        "Text doesn’t match the From language. Use that script or Auto-Detect.";
+
+    if (!sourceCodeRaw) {
+        showStatus(baseMsg, true);
+        return;
+    }
+
+    const lc = sourceCodeRaw.toLowerCase();
+    const key = lc.split("-")[0]; // e.g. "hi-in" -> "hi"
+
+    const messages = {
+        // English
+        en: "Text doesn’t match the From language. Use that script or Auto-Detect.",
+
+        // German
+        de: "Text passt nicht zur Quellsprache. Nutze deren Schrift oder Auto-Erkennung.",
+
+        // Hindi
+        hi: "टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता। उसी लिपि में लिखें या Auto-Detect चुनें।",
+
+        // Marathi
+        mr: "मजकूर निवडलेल्या भाषेशी जुळत नाही. त्या लिपीत लिहा किंवा Auto-Detect वापरा.",
+
+        // Spanish
+        es: "El texto no coincide con el idioma origen. Usa esa escritura o Auto-Detect.",
+
+        // French
+        fr: "Le texte ne correspond pas à la langue source. Utilisez cette écriture ou Auto-Detect."
+    };
+
+    const msg = messages[key] || baseMsg;
+    showStatus(msg, true);
+}
+
 /* -------------------- Translation (MyMemory) -------------------- */
 
 async function translate(text) {
@@ -208,13 +298,24 @@ async function translate(text) {
         return;
     }
 
+    const sourceCodeRaw = sourceSelect.value;
+
+    // Validate script vs selected "From" language
+    if (sourceCodeRaw && sourceCodeRaw !== "auto") {
+        const ok = inputMatchesSelectedLanguage(trimmed, sourceCodeRaw);
+        if (!ok) {
+            showLanguageMismatchError(sourceCodeRaw);
+            return;
+        }
+    }
+
     // OFFLINE HANDLING – always show your exact message
     if (isOffline()) {
         showStatus(OFFLINE_MESSAGE, true);
         return;
     }
 
-    const sourceLang = mapSourceForTranslate(sourceSelect.value);
+    const sourceLang = mapSourceForTranslate(sourceCodeRaw);
     const targetLang = targetSelect.value || "en";
 
     const srcCode = sourceLang === "auto" ? "auto" : sourceLang;
@@ -415,7 +516,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setDefaultSourceLanguage();
     setupRecognition();
 
-    // Warm up voices so speech works reliably
     if (window.speechSynthesis) {
         warmVoices();
         window.speechSynthesis.onvoiceschanged = warmVoices;
