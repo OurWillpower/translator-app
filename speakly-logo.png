@@ -1,5 +1,5 @@
-/speakly-app/
-   index.html
-   style.css
-   app.js
-   speakly-logo.png   ← put the logo here
+speakly-app/
+  index.html
+  style.css
+  app.js
+  speakly-logo.png   ✅
