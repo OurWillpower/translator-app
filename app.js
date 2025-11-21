@@ -267,22 +267,22 @@ function showLanguageMismatchError(sourceCodeRaw) {
 
     const messages = {
         // English
-        en: "Text doesn’t match the From language. Use that script or Auto-Detect.",
+        en: "Text doesn’t match the From language.",
 
         // German
-        de: "Text passt nicht zur Quellsprache. Nutze deren Schrift oder Auto-Erkennung.",
+        de: "Text passt nicht zur Quellsprache.",
 
         // Hindi
-        hi: "टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता। उसी लिपि में लिखें या Auto-Detect चुनें।",
+        hi: "टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता।",
 
         // Marathi
-        mr: "मजकूर निवडलेल्या भाषेशी जुळत नाही. त्या लिपीत लिहा किंवा Auto-Detect वापरा.",
+        mr: "मजकूर निवडलेल्या भाषेशी जुळत नाही.",
 
         // Spanish
-        es: "El texto no coincide con el idioma origen. Usa esa escritura o Auto-Detect.",
+        es: "El texto no coincide con el idioma origen.",
 
         // French
-        fr: "Le texte ne correspond pas à la langue source. Utilisez cette écriture ou Auto-Detect."
+        fr: "Le texte ne correspond pas à la langue source."
     };
 
     const msg = messages[key] || baseMsg;
