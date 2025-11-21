@@ -1,6 +1,5 @@
-<img
-    id="app-logo-svg"
-    src="speakly-logo.png"
-    alt="Speakly Logo"
-    class="app-logo-img"
-/>
+/speakly-app/
+   index.html
+   style.css
+   app.js
+   speakly-logo.png   ← put the logo here
