@@ -542,3 +542,13 @@ textarea:focus {
 .footer-links a:hover {
     text-decoration: underline;
 }
+.app-logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin-right: 8px;
+    filter:
+        drop-shadow(0 0 6px rgba(255, 215, 140, 0.85))
+        drop-shadow(0 0 12px rgba(130, 90, 20, 0.55));
+}
+
