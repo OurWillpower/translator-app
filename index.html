@@ -19,7 +19,7 @@
     <header class="app-header">
         <div class="app-title">
 
-            <!-- SPEAKLY LOGO IN HEADER (Option A) -->
+            <!-- SPEAKLY LOGO IN HEADER -->
             <img
                 id="app-logo-svg"
                 src="speakly-logo.png.PNG"
@@ -47,7 +47,6 @@
                     <label for="language-select-source">From:</label>
                     <select id="language-select-source">
 
-                        <!-- VOICE SUPPORTED -->
                         <optgroup label="Voice + Text (Recommended)">
                             <option value="en-US">🔊 English (US)</option>
                             <option value="en-GB">🔊 English (UK)</option>
@@ -84,7 +83,6 @@
                             <option value="hu">🔊 Hungarian</option>
                         </optgroup>
 
-                        <!-- TEXT ONLY -->
                         <optgroup label="Text Only (Translation)">
                             <option value="auto">Teᵗ Auto-Detect (Typing)</option>
 
@@ -206,12 +204,7 @@
         <!-- MIC BUTTON CARD -->
         <section class="card card-actions">
             <button id="talk-button">
-                <!-- LOGO INSIDE BUTTON (Option D) -->
-                <img
-                    src="speakly-logo.png.PNG"
-                    alt="Speakly Icon"
-                    class="btn-logo"
-                />
+                <span class="btn-emoji">🎤</span>
                 <span>Press to Speak</span>
             </button>
             <div class="helper-text">Tap, speak clearly and wait a moment for your translation.</div>
