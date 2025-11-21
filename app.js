@@ -1,4 +1,4 @@
-// SPEAKLY – app.js (stable version with softer language check)
+// SPEAKLY – app.js (with India default = Hindi)
 
 // ---------- ELEMENTS ----------
 const sourceSelect = document.getElementById("language-select-source");
@@ -53,11 +53,17 @@ function setStatus(msg) {
   statusEl.textContent = msg || "";
 }
 
-// ---------- DEFAULT SOURCE BASED ON BROWSER ----------
+// ---------- DEFAULT SOURCE BASED ON REGION / LOCALE ----------
 (function setDefaultSourceByLocale() {
   try {
     const locale = (navigator.language || "").toLowerCase();
-    if (locale.startsWith("hi")) {
+    const tz =
+      (Intl.DateTimeFormat().resolvedOptions().timeZone || "").toString();
+
+    // If device time zone is India, we default to Hindi
+    if (tz === "Asia/Kolkata") {
+      sourceSelect.value = "hi-IN";
+    } else if (locale.startsWith("hi")) {
       sourceSelect.value = "hi-IN";
     } else if (locale.startsWith("mr")) {
       sourceSelect.value = "mr-IN";
@@ -65,6 +71,7 @@ function setStatus(msg) {
       sourceSelect.value = "en-US";
     }
   } catch (e) {
+    // Safe fallback
     sourceSelect.value = "en-US";
   }
 
