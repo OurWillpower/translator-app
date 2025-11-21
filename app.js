@@ -60,7 +60,6 @@ function mapSourceForTranslate(code) {
 
 /**
  * Choose a reasonable speech language code from the target code.
- * e.g. "en" -> "en-US", "hi" -> "hi-IN", otherwise use the code directly.
  */
 function getSpeechLangFromTarget(targetCode) {
     if (!targetCode) return "en-US";
@@ -80,7 +79,7 @@ function getSpeechLangFromTarget(targetCode) {
     if (code === "ar") return "ar-SA";
     if (code === "ru") return "ru-RU";
 
-    return code; // fallback: use as-is
+    return code;
 }
 
 /* ---- Voice warm-up ---- */
@@ -98,11 +97,9 @@ function chooseVoiceForLang(langCode) {
     if (!voices || !voices.length) return null;
     const codeLower = langCode.toLowerCase();
 
-    // exact match
     let v = voices.find(v => v.lang.toLowerCase() === codeLower);
     if (v) return v;
 
-    // language prefix
     const prefix = codeLower.split("-")[0];
     v = voices.find(v => v.lang.toLowerCase().startsWith(prefix));
     if (v) return v;
@@ -134,70 +131,10 @@ function speakTranslation(text) {
     synth.speak(utter);
 }
 
-/* ---- Default source language (India-aware) ---- */
-
-function setDefaultSourceLanguage() {
-    try {
-        const navLangRaw = (navigator.language || "").toLowerCase();
-        let tz = "";
-
-        try {
-            if (typeof Intl !== "undefined" && Intl.DateTimeFormat) {
-                const opts = Intl.DateTimeFormat().resolvedOptions();
-                tz = (opts && opts.timeZone) || "";
-            }
-        } catch (e) {
-            tz = "";
-        }
-
-        const tzLower = (tz || "").toLowerCase();
-        let defaultCode = null;
-
-        const isIndia =
-            tzLower.includes("kolkata") ||
-            tzLower.includes("calcutta") ||
-            navLangRaw.endsWith("-in");
-
-        if (isIndia) {
-            if (navLangRaw.startsWith("mr")) {
-                defaultCode = "mr-IN";
-            } else {
-                defaultCode = "hi-IN";
-            }
-        }
-
-        if (!defaultCode && navLangRaw) {
-            if (navLangRaw.startsWith("hi")) {
-                defaultCode = "hi-IN";
-            } else if (navLangRaw.startsWith("mr")) {
-                defaultCode = "mr-IN";
-            } else if (navLangRaw.startsWith("en")) {
-                defaultCode = "en-US";
-            }
-        }
-
-        if (defaultCode) {
-            const options = Array.from(sourceSelect.options);
-            const exists = options.some(o => o.value === defaultCode);
-            if (exists) {
-                sourceSelect.value = defaultCode;
-            }
-        }
-    } catch (e) {
-        console.error("Could not set default source language:", e);
-    }
-}
-
 /* -------------------- Input–language validation -------------------- */
 
-/**
- * For some scripts (Hindi, Marathi, etc.), ensure the typed text actually
- * contains characters from that script. This prevents strange translations
- * like "Hello" in Latin letters -> random phrase.
- */
-
 const SCRIPT_REGEX = {
-    devanagari: /[\u0900-\u097F]/,    // Hindi, Marathi, Nepali, etc.
+    devanagari: /[\u0900-\u097F]/,
     bengali: /[\u0980-\u09FF]/,
     gurmukhi: /[\u0A00-\u0A7F]/,
     gujarati: /[\u0A80-\u0AFF]/,
@@ -210,17 +147,11 @@ const SCRIPT_REGEX = {
     thai: /[\u0E00-\u0E7F]/,
 };
 
-/**
- * Decide which script we expect based on the selected "From" language.
- * Only validate for languages where script is clear (Hindi, Marathi etc.).
- */
 function getExpectedScriptForSourceLang(sourceCode) {
     if (!sourceCode) return null;
     const lc = sourceCode.toLowerCase();
 
-    if (lc.startsWith("hi") || lc.startsWith("mr") || lc.startsWith("ne")) {
-        return "devanagari";
-    }
+    if (lc.startsWith("hi") || lc.startsWith("mr") || lc.startsWith("ne")) return "devanagari";
     if (lc.startsWith("bn")) return "bengali";
     if (lc.startsWith("pa")) return "gurmukhi";
     if (lc.startsWith("gu")) return "gujarati";
@@ -235,58 +166,17 @@ function getExpectedScriptForSourceLang(sourceCode) {
     return null;
 }
 
-/**
- * Returns true if the text looks consistent with the selected "From" language.
- */
 function inputMatchesSelectedLanguage(text, sourceCode) {
     const script = getExpectedScriptForSourceLang(sourceCode);
-    if (!script) {
-        // No special validation for this language
-        return true;
-    }
+    if (!script) return true;
     const regex = SCRIPT_REGEX[script];
     if (!regex) return true;
 
     return regex.test(text);
 }
 
-/**
- * Show a short, crisp mismatch error in the selected input language where possible.
- */
-function showLanguageMismatchError(sourceCodeRaw) {
-    const baseMsg =
-        "Text doesn’t match the From language. Use that script or Auto-Detect.";
-
-    if (!sourceCodeRaw) {
-        showStatus(baseMsg, true);
-        return;
-    }
-
-    const lc = sourceCodeRaw.toLowerCase();
-    const key = lc.split("-")[0]; // e.g. "hi-in" -> "hi"
-
-    const messages = {
-        // English
-        en: "Text doesn’t match the From language.",
-
-        // German
-        de: "Text passt nicht zur Quellsprache.",
-
-        // Hindi
-        hi: "टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता।",
-
-        // Marathi
-        mr: "मजकूर निवडलेल्या भाषेशी जुळत नाही.",
-
-        // Spanish
-        es: "El texto no coincide con el idioma origen.",
-
-        // French
-        fr: "Le texte ne correspond pas à la langue source."
-    };
-
-    const msg = messages[key] || baseMsg;
-    showStatus(msg, true);
+function showLanguageMismatchError() {
+    showStatus("टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता", true);
 }
 
 /* -------------------- Translation (MyMemory) -------------------- */
@@ -294,22 +184,20 @@ function showLanguageMismatchError(sourceCodeRaw) {
 async function translate(text) {
     const trimmed = (text || "").trim();
     if (!trimmed) {
-        showStatus("Type or speak something to translate.");
+        showStatus("");
         return;
     }
 
     const sourceCodeRaw = sourceSelect.value;
 
-    // Validate script vs selected "From" language
     if (sourceCodeRaw && sourceCodeRaw !== "auto") {
         const ok = inputMatchesSelectedLanguage(trimmed, sourceCodeRaw);
         if (!ok) {
-            showLanguageMismatchError(sourceCodeRaw);
+            showLanguageMismatchError();
             return;
         }
     }
 
-    // OFFLINE HANDLING – always show your exact message
     if (isOffline()) {
         showStatus(OFFLINE_MESSAGE, true);
         return;
@@ -322,7 +210,7 @@ async function translate(text) {
     const tgtCode = targetLang;
 
     setLoading(true);
-    showStatus(`Translating from ${srcCode} to ${tgtCode}...`);
+    showStatus("");
 
     try {
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
@@ -337,23 +225,18 @@ async function translate(text) {
         }
 
         const translated = data.responseData.translatedText || "";
-        if (!translated) {
-            throw new Error("No translated text received.");
-        }
+        if (!translated) throw new Error("No translated text.");
 
         outputTextEl.value = translated;
-        showStatus("Translation ready.");
         speakTranslation(translated);
+
     } catch (err) {
         console.error("Translation error:", err);
 
         if (isOffline()) {
             showStatus(OFFLINE_MESSAGE, true);
         } else {
-            showStatus(
-                "Unable to translate right now. Please check your internet or try again in a while.",
-                true
-            );
+            showStatus("Unable to translate right now.", true);
         }
     } finally {
         setLoading(false);
@@ -366,10 +249,7 @@ function setupRecognition() {
     const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        showStatus(
-            "Speech recognition is not supported in this browser. You can still type to translate.",
-            true
-        );
+        showStatus("Speech not supported. Type instead.", true);
         talkButton.disabled = false;
         return;
     }
@@ -383,7 +263,6 @@ function setupRecognition() {
         talkButton.style.opacity = "0.85";
         const span = talkButton.querySelector("span:last-child");
         if (span) span.textContent = "Listening...";
-        showStatus("Listening… speak now.");
     };
 
     recognition.onend = () => {
@@ -391,41 +270,26 @@ function setupRecognition() {
         talkButton.style.opacity = "1";
         const span = talkButton.querySelector("span:last-child");
         if (span) span.textContent = "Press to Speak";
-        if (loadingIndicator.style.display === "none") {
-            showStatus("");
-        }
     };
 
-    recognition.onerror = event => {
-        console.error("Speech recognition error:", event);
-        showStatus(
-            "Could not access the microphone or understand speech. Please try again.",
-            true
-        );
+    recognition.onerror = () => {
+        showStatus("Mic access error.", true);
     };
 
     recognition.onresult = event => {
         const transcript = Array.from(event.results)
             .map(r => r[0].transcript)
             .join(" ");
-
         inputTextEl.value = transcript;
         translate(transcript);
     };
-
-    talkButton.disabled = false;
 }
 
 /* -------------------- Event listeners -------------------- */
 
 talkButton.addEventListener("click", () => {
-    if (!recognition) {
-        showStatus(
-            "Speech recognition is not available in this browser. You can still type to translate.",
-            true
-        );
-        return;
-    }
+    if (!recognition) return;
+
     if (isListening) {
         recognition.stop();
         return;
@@ -441,22 +305,14 @@ talkButton.addEventListener("click", () => {
         recognition.lang = src && src !== "auto" ? src : "en-US";
         recognition.start();
     } catch (err) {
-        console.error("Start listening error:", err);
-        showStatus("Unable to start listening. Please check microphone permissions.", true);
+        showStatus("Mic error.", true);
     }
 });
 
 muteButton.addEventListener("click", () => {
     isMuted = !isMuted;
-    if (isMuted) {
-        iconSpeaker.style.display = "none";
-        iconMute.style.display = "inline";
-        showStatus("Sound muted.");
-    } else {
-        iconSpeaker.style.display = "inline";
-        iconMute.style.display = "none";
-        showStatus("Sound on.");
-    }
+    iconSpeaker.style.display = isMuted ? "none" : "inline";
+    iconMute.style.display = isMuted ? "inline" : "none";
 });
 
 clearButton.addEventListener("click", () => {
@@ -467,53 +323,44 @@ clearButton.addEventListener("click", () => {
 
 copyButton.addEventListener("click", async () => {
     const text = outputTextEl.value.trim();
-    if (!text) {
-        showStatus("Nothing to copy yet.");
-        return;
-    }
+    if (!text) return;
 
     try {
         await navigator.clipboard.writeText(text);
         iconCopy.style.display = "none";
         iconCheck.style.display = "inline";
-        showStatus("Translation copied.");
         setTimeout(() => {
             iconCopy.style.display = "inline";
             iconCheck.style.display = "none";
         }, 1200);
     } catch (err) {
-        console.error("Copy error:", err);
-        showStatus("Could not copy to clipboard.", true);
+        showStatus("Copy failed.", true);
     }
 });
 
-inputTextEl.addEventListener("input", () => {
-    const text = inputTextEl.value;
-    if (debounceTimer) {
-        clearTimeout(debounceTimer);
+/* 
+---------------------------------------------------------------
+ NEW FEATURE: Auto-translate on Enter, Tab, or leaving the box
+---------------------------------------------------------------
+*/
+
+inputTextEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        translate(inputTextEl.value);
     }
-    debounceTimer = setTimeout(() => {
-        if (text.trim()) {
-            translate(text);
-        } else {
-            outputTextEl.value = "";
-            showStatus("");
-        }
-    }, 700);
+    if (e.key === "Tab") {
+        translate(inputTextEl.value);
+    }
 });
 
-window.addEventListener("offline", () => {
-    showStatus(OFFLINE_MESSAGE, true);
-});
-
-window.addEventListener("online", () => {
-    showStatus("You are back online. You can translate again.");
+inputTextEl.addEventListener("blur", () => {
+    translate(inputTextEl.value);
 });
 
 /* -------------------- Init -------------------- */
 
 document.addEventListener("DOMContentLoaded", () => {
-    setDefaultSourceLanguage();
     setupRecognition();
 
     if (window.speechSynthesis) {
