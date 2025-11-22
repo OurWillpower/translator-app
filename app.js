@@ -1,4 +1,12 @@
-// SPEAKLY – clean translation logic with strict Hindi/Marathi input check
+// ===============================
+// SPEAKLY - TRANSLATION LOGIC v3
+// ===============================
+//
+// - UI is unchanged (relies on existing IDs).
+// - Default: FROM Hindi, TO English.
+// - If FROM = Hindi/Marathi and user types only English letters,
+//   we BLOCK translation and show a short Hindi warning.
+// - Uses MyMemory with mt=1 (machine translation only).
 
 window.addEventListener("DOMContentLoaded", () => {
   // ---------- GET ELEMENTS ----------
@@ -16,7 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const loadingIndicator = document.getElementById("loading-indicator");
 
   if (!sourceSelect || !targetSelect || !talkButton || !inputText || !outputText) {
-    console.error("Speakly: some DOM elements are missing. Check IDs in index.html.");
+    console.error("Speakly: required DOM elements missing.");
     return;
   }
 
@@ -38,46 +46,39 @@ window.addEventListener("DOMContentLoaded", () => {
     return code.split("-")[0].toLowerCase();
   }
 
-  // Rough script detection
+  // Detect whether text is in Latin (A–Z) or Devanagari
   function detectScript(text) {
     if (!text) return "unknown";
-    if (/[ऀ-ॿ]/.test(text)) return "devanagari";   // Hindi / Marathi
-    if (/[a-zA-Z]/.test(text)) return "latin";      // English letters
+    if (/[ऀ-ॿ]/.test(text)) return "devanagari"; // Hindi/Marathi script
+    if (/[a-zA-Z]/.test(text)) return "latin";    // English letters
     return "other";
   }
 
-  // Should we block this text for the chosen source language?
-  function isInvalidForSource(text, srcCode) {
+  // Decide if we must BLOCK translation for this text/source combination
+  function shouldBlockForSource(text, srcCode) {
     const script = detectScript(text);
     const base = baseLang(srcCode);
 
-    // If FROM is Hindi or Marathi and user typed only English letters
+    // Our rule: for FROM = Hindi/Marathi, user must not type only English letters
     if ((base === "hi" || base === "mr") && script === "latin") {
       return true;
     }
-
-    // For now we don't block anything else
     return false;
   }
 
-  // ---------- SIMPLE DEFAULTS ----------
-  try {
-    sourceSelect.value = "hi-IN"; // From: Hindi
-  } catch (_) {}
-  try {
-    targetSelect.value = "en";    // To: English
-  } catch (_) {}
+  // ---------- DEFAULT LANGUAGES ----------
+  try { sourceSelect.value = "hi-IN"; } catch (_) {}
+  try { targetSelect.value = "en"; } catch (_) {}
 
-  // ---------- SPEECH RECOGNITION ----------
+  // ---------- SPEECH RECOGNITION (optional) ----------
   function initSpeechRecognition() {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn("Speakly: SpeechRecognition not supported on this browser.");
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      console.warn("Speakly: SpeechRecognition not supported.");
       return;
     }
 
-    recognition = new SpeechRecognition();
+    recognition = new SR();
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
@@ -112,7 +113,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   initSpeechRecognition();
 
-  // ---------- SPEECH SYNTHESIS ----------
+  // ---------- SPEECH SYNTHESIS (optional) ----------
   function loadVoices() {
     if (!window.speechSynthesis) return;
     voices = window.speechSynthesis.getVoices();
@@ -144,6 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // ---------- TRANSLATION ----------
   async function translateCurrentText() {
     const text = inputText.value.trim();
+
     if (!text) {
       setStatus("");
       outputText.value = "";
@@ -151,9 +153,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     const srcCode = sourceSelect.value || "hi-IN";
+    const tgtCode = targetSelect.value || "en";
 
-    // 1) BLOCK clearly wrong input (Hindi/Marathi selected, English typed)
-    if (isInvalidForSource(text, srcCode)) {
+    // 1) Validation: block clearly wrong input for Hindi/Marathi
+    if (shouldBlockForSource(text, srcCode)) {
       setStatus("टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता");
       outputText.value = "";
       return;
@@ -161,14 +164,13 @@ window.addEventListener("DOMContentLoaded", () => {
       setStatus("");
     }
 
-    // 2) Online check
+    // 2) Internet check
     if (!navigator.onLine) {
       setStatus("You are offline. Speakly needs internet to translate.");
       return;
     }
 
-    const tgtCode = targetSelect.value || "en";
-
+    // 3) Build MyMemory request
     const srcBase = baseLang(srcCode);
     const tgtBase = baseLang(tgtCode);
     const langpair = `${srcBase}|${tgtBase}`;
@@ -178,7 +180,7 @@ window.addEventListener("DOMContentLoaded", () => {
       encodeURIComponent(text) +
       "&langpair=" +
       encodeURIComponent(langpair) +
-      "&mt=1"; // force machine translation
+      "&mt=1"; // machine translation only
 
     if (loadingIndicator) loadingIndicator.style.display = "flex";
     outputText.value = "";
@@ -208,6 +210,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // Press to Speak
   talkButton.addEventListener("click", () => {
     if (recognition) {
+      // Use mic if supported
       if (isListening) {
         recognition.stop();
         return;
@@ -216,6 +219,7 @@ window.addEventListener("DOMContentLoaded", () => {
       recognition.lang = srcCode;
       recognition.start();
     } else {
+      // Fallback: just translate typed text
       translateCurrentText();
     }
   });
@@ -246,7 +250,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Clear
+  // Clear button
   if (clearButton) {
     clearButton.addEventListener("click", () => {
       inputText.value = "";
@@ -255,7 +259,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Copy
+  // Copy button
   if (copyButton) {
     copyButton.addEventListener("click", async () => {
       const text = outputText.value.trim();
