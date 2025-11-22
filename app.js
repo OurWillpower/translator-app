@@ -1,4 +1,5 @@
-// SPEAKLY – app.js (with India default = Hindi)
+
+// SPEAKLY – app.js (India default = Hindi, MyMemory forced MT)
 
 // ---------- ELEMENTS ----------
 const sourceSelect = document.getElementById("language-select-source");
@@ -53,15 +54,40 @@ function setStatus(msg) {
   statusEl.textContent = msg || "";
 }
 
+// Detect if user is likely in India (time zone or locale)
+function isIndiaUser() {
+  try {
+    const tz = (
+      Intl.DateTimeFormat().resolvedOptions().timeZone || ""
+    ).toLowerCase();
+
+    if (tz.includes("kolkata") || tz.includes("calcutta")) {
+      return true;
+    }
+  } catch (_) {
+    // ignore
+  }
+
+  try {
+    const primary = (navigator.language || "").toLowerCase();
+    const langs = (navigator.languages || []).map((l) => l.toLowerCase());
+
+    if (primary.endsWith("-in")) return true;
+    if (langs.some((l) => l.endsWith("-in"))) return true;
+  } catch (_) {
+    // ignore
+  }
+
+  return false;
+}
+
 // ---------- DEFAULT SOURCE BASED ON REGION / LOCALE ----------
 (function setDefaultSourceByLocale() {
   try {
     const locale = (navigator.language || "").toLowerCase();
-    const tz =
-      (Intl.DateTimeFormat().resolvedOptions().timeZone || "").toString();
 
-    // If device time zone is India, we default to Hindi
-    if (tz === "Asia/Kolkata") {
+    if (isIndiaUser()) {
+      // Any India-region device: default to Hindi
       sourceSelect.value = "hi-IN";
     } else if (locale.startsWith("hi")) {
       sourceSelect.value = "hi-IN";
@@ -84,200 +110,4 @@ function initSpeechRecognition() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    setStatus("Voice input not supported on this browser.");
-    return;
-  }
-
-  recognition = new SpeechRecognition();
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-  recognition.continuous = false;
-
-  recognition.onstart = () => {
-    isListening = true;
-    setStatus("Listening…");
-    talkButton.disabled = true;
-    talkButton.style.opacity = "0.7";
-  };
-
-  recognition.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
-    setStatus("Couldn’t hear clearly. Please try again.");
-    isListening = false;
-    talkButton.disabled = false;
-    talkButton.style.opacity = "1";
-  };
-
-  recognition.onend = () => {
-    isListening = false;
-    talkButton.disabled = false;
-    talkButton.style.opacity = "1";
-  };
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.trim();
-    inputText.value = transcript;
-    translateCurrentText();
-  };
-}
-
-initSpeechRecognition();
-
-// ---------- SPEECH SYNTHESIS ----------
-function loadVoices() {
-  if (!window.speechSynthesis) return;
-  voices = window.speechSynthesis.getVoices();
-}
-
-if ("speechSynthesis" in window) {
-  loadVoices();
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-function speakOut(text, langCode) {
-  if (!window.speechSynthesis || isMuted || !text) return;
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  const base = baseLang(langCode);
-
-  const voice =
-    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
-    voices.find((v) => v.lang.toLowerCase().startsWith("en")) ||
-    null;
-
-  if (voice) utterance.voice = voice;
-  utterance.rate = 1;
-  utterance.pitch = 1;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
-}
-
-// ---------- TRANSLATION ----------
-async function translateCurrentText() {
-  const text = inputText.value.trim();
-  if (!text) {
-    setStatus("");
-    outputText.value = "";
-    return;
-  }
-
-  // Offline check
-  if (!navigator.onLine) {
-    setStatus("You are offline. Speakly needs internet to translate.");
-    return;
-  }
-
-  const srcCode = sourceSelect.value;
-  const tgtCode = targetSelect.value;
-  const srcBase = baseLang(srcCode);
-  const tgtBase = baseLang(tgtCode);
-
-  // Smart mismatch warning ONLY for Hindi/Marathi when user types in English letters.
-  if (!isLanguageMatch(text, srcCode)) {
-    setStatus("टेक्स्ट चुनी हुई भाषा से मेल नहीं खाता");
-    return;
-  } else {
-    setStatus("");
-  }
-
-  const langpair = `${srcBase}|${tgtBase}`;
-  const url =
-    "https://api.mymemory.translated.net/get?q=" +
-    encodeURIComponent(text) +
-    "&langpair=" +
-    encodeURIComponent(langpair);
-
-  loadingIndicator.style.display = "flex";
-  outputText.value = "";
-
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    loadingIndicator.style.display = "none";
-
-    if (data && data.responseData && data.responseData.translatedText) {
-      const translated = data.responseData.translatedText;
-      outputText.value = translated;
-      setStatus("");
-      speakOut(translated, tgtBase);
-    } else {
-      console.error("Unexpected translation response:", data);
-      setStatus("Could not translate right now. Please try again.");
-    }
-  } catch (err) {
-    console.error("Translation error:", err);
-    loadingIndicator.style.display = "none";
-    setStatus("Could not translate right now. Please try again.");
-  }
-}
-
-// ---------- EVENT LISTENERS ----------
-
-// Press to Speak
-talkButton.addEventListener("click", () => {
-  if (!recognition) {
-    setStatus("Voice input not supported on this browser.");
-    return;
-  }
-  if (isListening) {
-    recognition.stop();
-    return;
-  }
-  const srcCode = sourceSelect.value || "en-US";
-  recognition.lang = srcCode;
-  recognition.start();
-});
-
-// Auto-translate on Enter
-inputText.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    translateCurrentText();
-  }
-});
-
-// Auto-translate when leaving the box
-inputText.addEventListener("blur", () => {
-  translateCurrentText();
-});
-
-// Mute / Unmute (only toggles behaviour, doesn’t touch label)
-muteButton.addEventListener("click", () => {
-  isMuted = !isMuted;
-  if (isMuted) {
-    setStatus("Voice output muted.");
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-  } else {
-    setStatus("");
-  }
-});
-
-// Clear
-clearButton.addEventListener("click", () => {
-  inputText.value = "";
-  outputText.value = "";
-  setStatus("");
-});
-
-// Copy
-copyButton.addEventListener("click", async () => {
-  const text = outputText.value.trim();
-  if (!text) return;
-  try {
-    await navigator.clipboard.writeText(text);
-    if (iconCopy && iconCheck) {
-      iconCopy.style.display = "none";
-      iconCheck.style.display = "inline";
-      setTimeout(() => {
-        iconCopy.style.display = "inline";
-        iconCheck.style.display = "none";
-      }, 1500);
-    }
-  } catch (e) {
-    console.error("Clipboard error:", e);
-  }
-});
-
-// Clear status when languages change
-sourceSelect.addEventListener("change", () => setStatus(""));
-targetSelect.addEventListener("change", () => setStatus(""));
+    setStatus("Voice input
