@@ -1,4 +1,3 @@
-
 // SPEAKLY – app.js (India default = Hindi, MyMemory forced MT)
 
 // ---------- ELEMENTS ----------
