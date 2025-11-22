@@ -1,4 +1,5 @@
-// SPEAKLY – app.js (India default = Hindi, MyMemory forced MT)
+// SPEAKLY – Minimal stable version
+// Text + voice translation, no fancy checks, no region tricks.
 
 // ---------- ELEMENTS ----------
 const sourceSelect = document.getElementById("language-select-source");
@@ -20,88 +21,27 @@ let isMuted = false;
 let recognition = null;
 let voices = [];
 
-// ---------- UTILS ----------
+// ---------- HELPERS ----------
+function setStatus(msg) {
+  statusEl.textContent = msg || "";
+}
 
-// Convert locale to base language (hi-IN -> hi)
+// "en-US" -> "en"
 function baseLang(code) {
   if (!code) return "en";
   if (code === "auto") return "auto";
   return code.split("-")[0].toLowerCase();
 }
 
-// Very simple script detector
-function detectScript(text) {
-  if (!text) return "unknown";
-  if (/[ऀ-ॿ]/.test(text)) return "devanagari"; // Hindi/Marathi script
-  if (/[a-zA-Z]/.test(text)) return "latin";
-  return "other";
-}
-
-// Softer language match:
-// Only block if From = Hindi/Marathi AND user is typing in plain English letters.
-function isLanguageMatch(text, srcCode) {
-  const script = detectScript(text);
-  const base = baseLang(srcCode);
-
-  if ((base === "hi" || base === "mr") && script === "latin") {
-    return false;
-  }
-  return true;
-}
-
-function setStatus(msg) {
-  statusEl.textContent = msg || "";
-}
-
-// Detect if user is likely in India (time zone or locale)
-function isIndiaUser() {
+// ---------- SIMPLE DEFAULTS ----------
+// (We keep it simple: English → Hindi to start. User can change.)
+(function setDefaults() {
   try {
-    const tz = (
-      Intl.DateTimeFormat().resolvedOptions().timeZone || ""
-    ).toLowerCase();
-
-    if (tz.includes("kolkata") || tz.includes("calcutta")) {
-      return true;
-    }
-  } catch (_) {
-    // ignore
-  }
-
-  try {
-    const primary = (navigator.language || "").toLowerCase();
-    const langs = (navigator.languages || []).map((l) => l.toLowerCase());
-
-    if (primary.endsWith("-in")) return true;
-    if (langs.some((l) => l.endsWith("-in"))) return true;
-  } catch (_) {
-    // ignore
-  }
-
-  return false;
-}
-
-// ---------- DEFAULT SOURCE BASED ON REGION / LOCALE ----------
-(function setDefaultSourceByLocale() {
-  try {
-    const locale = (navigator.language || "").toLowerCase();
-
-    if (isIndiaUser()) {
-      // Any India-region device: default to Hindi
-      sourceSelect.value = "hi-IN";
-    } else if (locale.startsWith("hi")) {
-      sourceSelect.value = "hi-IN";
-    } else if (locale.startsWith("mr")) {
-      sourceSelect.value = "mr-IN";
-    } else {
-      sourceSelect.value = "en-US";
-    }
+    if (sourceSelect) sourceSelect.value = "en-US";
+    if (targetSelect) targetSelect.value = "hi";
   } catch (e) {
-    // Safe fallback
-    sourceSelect.value = "en-US";
+    // ignore
   }
-
-  // Default target – English
-  targetSelect.value = "en";
 })();
 
 // ---------- SPEECH RECOGNITION ----------
@@ -109,4 +49,86 @@ function initSpeechRecognition() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    setStatus("Voice input
+    setStatus("Voice input not supported on this browser.");
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    setStatus("Listening…");
+    talkButton.disabled = true;
+    talkButton.style.opacity = "0.7";
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error:", event.error);
+    setStatus("Couldn’t hear clearly. Please try again.");
+    isListening = false;
+    talkButton.disabled = false;
+    talkButton.style.opacity = "1";
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    talkButton.disabled = false;
+    talkButton.style.opacity = "1";
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    inputText.value = transcript;
+    translateCurrentText();
+  };
+}
+
+initSpeechRecognition();
+
+// ---------- SPEECH SYNTHESIS ----------
+function loadVoices() {
+  if (!window.speechSynthesis) return;
+  voices = window.speechSynthesis.getVoices();
+}
+
+if ("speechSynthesis" in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speakOut(text, langCode) {
+  if (!window.speechSynthesis || isMuted || !text) return;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  const base = baseLang(langCode);
+
+  const voice =
+    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
+    voices.find((v) => v.lang.toLowerCase().startsWith("en")) ||
+    null;
+
+  if (voice) utterance.voice = voice;
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+// ---------- TRANSLATION (MyMemory, MT only) ----------
+async function translateCurrentText() {
+  const text = inputText.value.trim();
+  if (!text) {
+    setStatus("");
+    outputText.value = "";
+    return;
+  }
+
+  if (!navigator.onLine) {
+    setStatus("You are offline. Speakly needs internet to translate.");
+    return;
+  }
+
+  const srcCode = sourceSelect.value ||
