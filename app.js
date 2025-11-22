@@ -1,4 +1,4 @@
-// SPEAKLY – core version with strict Hindi/Marathi check
+// SPEAKLY – clean translation logic with strict Hindi/Marathi input check
 
 window.addEventListener("DOMContentLoaded", () => {
   // ---------- GET ELEMENTS ----------
@@ -38,50 +38,38 @@ window.addEventListener("DOMContentLoaded", () => {
     return code.split("-")[0].toLowerCase();
   }
 
-  // Detect if text is written in Latin (A–Z) or Devanagari
+  // Rough script detection
   function detectScript(text) {
     if (!text) return "unknown";
-    if (/[ऀ-ॿ]/.test(text)) return "devanagari";   // Hindi / Marathi script
+    if (/[ऀ-ॿ]/.test(text)) return "devanagari";   // Hindi / Marathi
     if (/[a-zA-Z]/.test(text)) return "latin";      // English letters
     return "other";
   }
 
+  // Should we block this text for the chosen source language?
+  function isInvalidForSource(text, srcCode) {
+    const script = detectScript(text);
+    const base = baseLang(srcCode);
+
+    // If FROM is Hindi or Marathi and user typed only English letters
+    if ((base === "hi" || base === "mr") && script === "latin") {
+      return true;
+    }
+
+    // For now we don't block anything else
+    return false;
+  }
+
   // ---------- SIMPLE DEFAULTS ----------
-  // Everyone gets: FROM Hindi, TO English on first load.
   try {
-    sourceSelect.value = "hi-IN";
+    sourceSelect.value = "hi-IN"; // From: Hindi
   } catch (_) {}
   try {
-    targetSelect.value = "en";
+    targetSelect.value = "en";    // To: English
   } catch (_) {}
 
   // ---------- SPEECH RECOGNITION ----------
   function initSpeechRecognition() {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn("Speakly: SpeechRecognition not supported on this browser.");
-      return;
-    }
-
-    recognition = new SpeechRecognition();
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.continuous = false;
-
-    recognition.onstart = () => {
-      isListening = true;
-      setStatus("Listening…");
-      talkButton.disabled = true;
-      talkButton.style.opacity = "0.7";
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      setStatus("Couldn’t hear clearly. Please try again.");
-      isListening = false;
-      talkButton.disabled = false;
-      talkButton.style.opacity = "1";
-    };
-
-    recognition.onend = () => {
+    if (!SpeechRecognition
