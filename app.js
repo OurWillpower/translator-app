@@ -1,12 +1,6 @@
 // ===============================
-// SPEAKLY - TRANSLATION LOGIC v3
+// SPEAKLY - TRANSLATION LOGIC v3 + better Marathi voice handling
 // ===============================
-//
-// - UI is unchanged (relies on existing IDs).
-// - Default: FROM Hindi, TO English.
-// - If FROM = Hindi/Marathi and user types only English letters,
-//   we BLOCK translation and show a short Hindi warning.
-// - Uses MyMemory with mt=1 (machine translation only).
 
 window.addEventListener("DOMContentLoaded", () => {
   // ---------- GET ELEMENTS ----------
@@ -59,7 +53,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const script = detectScript(text);
     const base = baseLang(srcCode);
 
-    // Our rule: for FROM = Hindi/Marathi, user must not type only English letters
+    // Rule: for FROM = Hindi/Marathi, user must not type only English letters
     if ((base === "hi" || base === "mr") && script === "latin") {
       return true;
     }
@@ -117,6 +111,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function loadVoices() {
     if (!window.speechSynthesis) return;
     voices = window.speechSynthesis.getVoices();
+    // console.log("Available voices:", voices.map(v => v.lang + " | " + v.name));
   }
 
   if ("speechSynthesis" in window) {
@@ -127,15 +122,43 @@ window.addEventListener("DOMContentLoaded", () => {
   function speakOut(text, langCode) {
     if (!window.speechSynthesis || isMuted || !text) return;
 
+    const targetBase = baseLang(langCode);
+    let preferredOrder;
+
+    // Special handling for Marathi: try mr -> hi -> en
+    if (targetBase === "mr") {
+      preferredOrder = ["mr", "hi", "en"];
+    } else if (targetBase === "hi") {
+      preferredOrder = ["hi", "en"];
+    } else {
+      preferredOrder = [targetBase, "en"];
+    }
+
+    let selectedVoice = null;
+    const lowerVoices = voices || [];
+
+    for (const pref of preferredOrder) {
+      selectedVoice = lowerVoices.find(v =>
+        v.lang && v.lang.toLowerCase().startsWith(pref)
+      );
+      if (selectedVoice) break;
+    }
+
+    // If we still don't have any suitable voice, just skip speaking
+    if (!selectedVoice) {
+      if (targetBase === "mr") {
+        setStatus("Marathi voice not available on this device. Showing text only.");
+      }
+      return;
+    }
+
+    // If Marathi is using a fallback (Hindi/English), tell user once
+    if (targetBase === "mr" && !selectedVoice.lang.toLowerCase().startsWith("mr")) {
+      setStatus("Marathi voice fallback used (Hindi/English voice). Text is correct.");
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
-    const base = baseLang(langCode);
-
-    const voice =
-      voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
-      voices.find((v) => v.lang.toLowerCase().startsWith("en")) ||
-      null;
-
-    if (voice) utterance.voice = voice;
+    utterance.voice = selectedVoice;
     utterance.rate = 1;
     utterance.pitch = 1;
     window.speechSynthesis.cancel();
